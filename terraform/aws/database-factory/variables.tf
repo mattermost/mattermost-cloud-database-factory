@@ -55,7 +55,7 @@ variable "deletion_protection" {
 }
 
 variable "backup_retention_period" {
-    default = "15"
+    default = ""
     type = string
 }
 

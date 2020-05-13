@@ -11,6 +11,14 @@ import (
 
 var templateDir = "terraform/aws/database-factory"
 
+// InitCreateCluster is used to call the CreateCluster function.
+func InitCreateCluster(cluster *model.Cluster) {
+	err := CreateCluster(cluster)
+	if err != nil {
+		logger.WithError(err).Error("failed to deploy RDS Aurora cluster")
+	}
+}
+
 // CreateCluster is used to initiate Terraform and either Apply or Plan Terraform for the RDS Cluster deployments.
 func CreateCluster(cluster *model.Cluster) error {
 	logger.Info("Initialising Terraform")
@@ -18,13 +26,11 @@ func CreateCluster(cluster *model.Cluster) error {
 
 	tf, err := terraform.New(templateDir, cluster.StateStore, logger)
 	if err != nil {
-		logger.WithError(err).Error("failed to initiate Terraform")
 		return errors.Wrap(err, "failed to initiate Terraform")
 	}
 
 	err = tf.Init(stateObject)
 	if err != nil {
-		logger.WithError(err).Error("failed to run Terraform init")
 		return errors.Wrap(err, "failed to run Terraform init")
 	}
 
@@ -32,7 +38,6 @@ func CreateCluster(cluster *model.Cluster) error {
 		logger.Info("applying Terraform template")
 		err = tf.Apply(cluster)
 		if err != nil {
-			logger.WithError(err).Error("failed to run Terraform apply")
 			return errors.Wrap(err, "failed to run Terraform apply")
 		}
 		logger.Info("successfully applied Terraform template")
@@ -40,10 +45,9 @@ func CreateCluster(cluster *model.Cluster) error {
 	}
 	err = tf.Plan(cluster)
 	if err != nil {
-		logger.WithError(err).Error("failed to run Terraform plan")
 		return errors.Wrap(err, "failed to run Terraform plan")
 	}
-	logger.Info("succesfully ran Terraform plan")
+	logger.Info("successfully ran Terraform plan")
 
 	return nil
 }

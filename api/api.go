@@ -53,7 +53,8 @@ func handleCreateDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
 		InstanceType:          createClusterRequest.InstanceType,
 		BackupRetentionPeriod: createClusterRequest.BackupRetentionPeriod,
 	}
-	go dbfactory.CreateCluster(&cluster)
+
+	go dbfactory.InitCreateCluster(&cluster)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)

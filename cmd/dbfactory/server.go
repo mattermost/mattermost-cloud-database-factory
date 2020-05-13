@@ -27,7 +27,7 @@ var serverCmd = &cobra.Command{
 func init() {
 	instanceID = model.NewID()
 
-	serverCmd.PersistentFlags().String("listen", ":8076", "The interface and port on which to listen.")
+	serverCmd.PersistentFlags().String("listen", ":8077", "The interface and port on which to listen.")
 	serverCmd.PersistentFlags().Bool("debug", false, "Whether to output debug logs.")
 }
 

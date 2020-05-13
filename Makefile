@@ -58,7 +58,7 @@ dist:	build
 .PHONY: build
 build: ## Build the mattermost-cloud-database-factory
 	@echo Building Mattermost-Cloud-Database-Factory
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/database-factory  ./cmd/dbfactory
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/dbfactory  ./cmd/dbfactory
 
 build-image:  ## Build the docker image for mattermost-cloud-database-factory
 	@echo Building Mattermost-cloud-database-factory Docker Image

@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	clusterCmd.PersistentFlags().String("server", "http://localhost:8076", "The DB factory server whose API will be queried.")
+	clusterCmd.PersistentFlags().String("server", "http://localhost:8077", "The DB factory server whose API will be queried.")
 
 	clusterCreateCmd.Flags().String("vpc-id", "", "The VPC id to create a RDS Aurora Cluster")
 	clusterCreateCmd.Flags().String("cluster-id", "", "A random 8 character identifier of the Aurora cluster")

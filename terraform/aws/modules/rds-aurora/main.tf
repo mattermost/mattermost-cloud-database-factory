@@ -1,8 +1,8 @@
 locals {
-  master_password      = var.password == "" ? random_password.master_password.result : var.password
-  performance_kms_key  = join("", aws_kms_key.aurora_performance_insights_key.*.keys_id)
-  performance_kms_key_arn  = join("", aws_kms_key.aurora_performance_insights_key.*.arn)
-  database_id              = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
+  master_password         = var.password == "" ? random_password.master_password.result : var.password
+  performance_kms_key     = join("", aws_kms_key.aurora_performance_insights_key.*.keys_id)
+  performance_kms_key_arn = join("", aws_kms_key.aurora_performance_insights_key.*.arn)
+  database_id             = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
 }
 
 # Random string to use as master password unless one is specified
@@ -48,32 +48,33 @@ data "aws_vpc" "provisioning_vpc" {
 }
 
 resource "aws_rds_cluster" "provisioning_rds_cluster" {
-  cluster_identifier                  = format("rds-cluster-multinenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
-  engine                              = var.engine
-  engine_version                      = var.engine_version
-  kms_key_id                          = aws_kms_key.aurora_storage_key.arn
-  master_username                     = var.username
-  master_password                     = local.master_password
-  final_snapshot_identifier           = "${var.final_snapshot_identifier_prefix}-${var.name}-${random_id.snapshot_identifier.hex}"
-  skip_final_snapshot                 = var.skip_final_snapshot
-  deletion_protection                 = var.deletion_protection
-  backup_retention_period             = var.backup_retention_period
-  preferred_backup_window             = var.preferred_backup_window
-  preferred_maintenance_window        = var.preferred_maintenance_window
-  port                                = var.port
-  db_subnet_group_name                = "mattermost-provisioner-db-${var.vpc_id}"
-  vpc_security_group_ids              = [data.aws_security_group.db_sg.id]
-  storage_encrypted                   = var.storage_encrypted
-  apply_immediately                   = var.apply_immediately
-  db_cluster_parameter_group_name     = "mattermost-provisioner-rds-cluster-pg"
-  copy_tags_to_snapshot               = var.copy_tags_to_snapshot
+  cluster_identifier              = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
+  engine                          = var.engine
+  engine_version                  = var.engine_version
+  kms_key_id                      = aws_kms_key.aurora_storage_key.arn
+  master_username                 = var.username
+  master_password                 = local.master_password
+  final_snapshot_identifier       = "${var.final_snapshot_identifier_prefix}-${var.name}-${random_id.snapshot_identifier.hex}"
+  skip_final_snapshot             = var.skip_final_snapshot
+  deletion_protection             = var.deletion_protection
+  backup_retention_period         = var.backup_retention_period
+  preferred_backup_window         = var.preferred_backup_window
+  preferred_maintenance_window    = var.preferred_maintenance_window
+  port                            = var.port
+  db_subnet_group_name            = "mattermost-provisioner-db-${var.vpc_id}"
+  vpc_security_group_ids          = [data.aws_security_group.db_sg.id]
+  storage_encrypted               = var.storage_encrypted
+  apply_immediately               = var.apply_immediately
+  db_cluster_parameter_group_name = "mattermost-provisioner-rds-cluster-pg"
+  copy_tags_to_snapshot           = var.copy_tags_to_snapshot
   enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
 
   tags = merge(
     {
-      "Counter"    = 0,
-      "RDSMultitenantDBClusterID" = format("rds-cluster-multinenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
-      "RDSMultitenantVPCID"              = var.vpc_id
+      "Counter"               = 0,
+      "MultitenantDatabaseID" = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
+      "VpcID"                 = var.vpc_id,
+      "DatabaseType"          = "multitenant-rds"
     },
     var.tags
   )
@@ -86,7 +87,7 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
 
 resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
   count                           = var.replica_min
-  identifier                      = format("rds-db-instance-multitenant-%s-%s-%s", split("-", var.vpc_id)[1], local.database_id, (count.index  + 1))
+  identifier                      = format("rds-db-instance-multitenant-%s-%s-%s", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
   cluster_identifier              = aws_rds_cluster.provisioning_rds_cluster.id
   engine                          = var.engine
   engine_version                  = var.engine_version
@@ -110,7 +111,7 @@ resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
   }
 }
 
-resource "random_id" "snapshot_identifier" {  
+resource "random_id" "snapshot_identifier" {
   keepers = {
     id = var.name
   }
@@ -118,7 +119,7 @@ resource "random_id" "snapshot_identifier" {
   byte_length = 4
 }
 
-resource "random_string" "db_cluster_identifier" {  
+resource "random_string" "db_cluster_identifier" {
   length = 8
 }
 
@@ -151,7 +152,7 @@ resource "aws_appautoscaling_policy" "autoscaling_read_replica_count" {
 }
 
 resource "aws_secretsmanager_secret" "master_password" {
-  name = format("rds-cluster-multinenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
+  name = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
 }
 
 resource "aws_secretsmanager_secret_version" "master_password" {

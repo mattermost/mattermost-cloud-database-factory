@@ -121,11 +121,6 @@ workflows:
           branches:
             only:
             - master
-    - test-postgres:
-        filters:
-          branches:
-            only:
-            - master
     - push-docker:
           context: matterbuild-docker
           requires:
@@ -144,12 +139,6 @@ workflows:
           branches:
             ignore: /.*/
     - test:
-        filters:
-          tags:
-            only: /^v.*/
-          branches:
-            ignore: /.*/
-    - test-postgres:
         filters:
           tags:
             only: /^v.*/

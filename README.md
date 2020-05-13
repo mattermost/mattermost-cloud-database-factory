@@ -70,6 +70,6 @@ or via a API call:
 }
 ```
 
-The clusterID is important for identifying the several deployments. If not clusterID is passes, a random 8-digit id is generated. If a clusterID of an existing cluster is specified, Terraform will try to update the existing cluster configuration.
+The clusterID value is important for determining how the database factory will behave. If not clusterID is passed in, a random 8-digit ID is generated. If a clusterID of an existing cluster is specified, Terraform will try to update the existing cluster configuration.
 
 By setting **apply** to *false* or removing **--apply**, a Terraform plan will run, which can be used for Debug and testing purposes.

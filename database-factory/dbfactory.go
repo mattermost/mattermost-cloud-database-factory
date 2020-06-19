@@ -16,6 +16,11 @@ func InitCreateCluster(cluster *model.Cluster) {
 	err := CreateCluster(cluster)
 	if err != nil {
 		logger.WithError(err).Error("failed to deploy RDS Aurora cluster")
+		err = sendMattermostErrorNotification(cluster, err, "The Database Factory failed to deploy RDS Aurora cluster")
+		if err != nil {
+			logger.WithError(err).Error("Failed to send Mattermost error notification")
+		}
+
 	}
 }
 
@@ -41,6 +46,10 @@ func CreateCluster(cluster *model.Cluster) error {
 			return errors.Wrap(err, "failed to run Terraform apply")
 		}
 		logger.Info("successfully applied Terraform template")
+		err = sendMattermostNotification(cluster, "The Database Factory successfully deployed a new RDS Aurora cluster")
+		if err != nil {
+			return errors.Wrap(err, "failed tο send Mattermost notification")
+		}
 		return nil
 	}
 	err = tf.Plan(cluster)

@@ -8,49 +8,11 @@ import (
 	"strconv"
 
 	"github.com/mattermost/mattermost-cloud-database-factory/model"
+	mmmodel "github.com/mattermost/mattermost-server/v5/model"
 	"github.com/pkg/errors"
 )
 
-// MMField is used for Mattermost attachement creation
-type MMField struct {
-	Title string `json:"title"`
-	Value string `json:"value"`
-	Short bool   `json:"short"`
-}
-
-// MMAttachment is used to create a Mattermost attachment
-type MMAttachment struct {
-	Fallback   *string    `json:"fallback"`
-	Color      string     `json:"color"`
-	PreText    *string    `json:"pretext"`
-	AuthorName *string    `json:"author_name"`
-	AuthorLink *string    `json:"author_link"`
-	AuthorIcon *string    `json:"author_icon"`
-	Title      *string    `json:"title"`
-	TitleLink  *string    `json:"title_link"`
-	Text       *string    `json:"text"`
-	ImageURL   *string    `json:"image_url"`
-	Fields     []*MMField `json:"fields"`
-}
-
-// MMSlashResponse is used to create the payload for the Mattermost notification
-type MMSlashResponse struct {
-	ResponseType string         `json:"response_type,omitempty"`
-	Username     string         `json:"username,omitempty"`
-	IconURL      string         `json:"icon_url,omitempty"`
-	Channel      string         `json:"channel,omitempty"`
-	Text         string         `json:"text,omitempty"`
-	GotoLocation string         `json:"goto_location,omitempty"`
-	Attachments  []MMAttachment `json:"attachments,omitempty"`
-}
-
-// AddField adds a field to a Mattermost attachment
-func (attachment *MMAttachment) AddField(field MMField) *MMAttachment {
-	attachment.Fields = append(attachment.Fields, &field)
-	return attachment
-}
-
-func send(webhookURL string, payload MMSlashResponse) error {
+func send(webhookURL string, payload mmmodel.CommandResponse) error {
 	marshalContent, _ := json.Marshal(payload)
 	var jsonStr = []byte(marshalContent)
 	req, err := http.NewRequest("POST", webhookURL, bytes.NewBuffer(jsonStr))
@@ -67,26 +29,24 @@ func send(webhookURL string, payload MMSlashResponse) error {
 }
 
 func sendMattermostNotification(cluster *model.Cluster, message string) error {
-	attachment := []MMAttachment{}
-	attach := MMAttachment{
+	attachment := &mmmodel.SlackAttachment{
 		Color: "#006400",
+		Fields: []*mmmodel.SlackAttachmentField{
+			{Title: message, Short: false},
+			{Title: "VPCID", Value: cluster.VPCID, Short: true},
+			{Title: "Environment", Value: cluster.Environment, Short: true},
+			{Title: "StateStore", Value: cluster.StateStore, Short: true},
+			{Title: "Apply", Value: strconv.FormatBool(cluster.Apply), Short: true},
+			{Title: "InstanceType", Value: cluster.InstanceType, Short: true},
+			{Title: "BackupRetentionPeriod", Value: cluster.BackupRetentionPeriod, Short: true},
+			{Title: "ClusterID", Value: cluster.ClusterID, Short: true},
+		},
 	}
 
-	attach = *attach.AddField(MMField{Title: message, Short: false}).
-		AddField(MMField{Title: "VPCID", Value: cluster.VPCID, Short: true}).
-		AddField(MMField{Title: "Environment", Value: cluster.Environment, Short: true}).
-		AddField(MMField{Title: "StateStore", Value: cluster.StateStore, Short: true}).
-		AddField(MMField{Title: "Apply", Value: strconv.FormatBool(cluster.Apply), Short: true}).
-		AddField(MMField{Title: "InstanceType", Value: cluster.InstanceType, Short: true}).
-		AddField(MMField{Title: "BackupRetentionPeriod", Value: cluster.BackupRetentionPeriod, Short: true}).
-		AddField(MMField{Title: "ClusterID", Value: cluster.ClusterID, Short: true})
-
-	attachment = append(attachment, attach)
-
-	payload := MMSlashResponse{
+	payload := mmmodel.CommandResponse{
 		Username:    "Database Factory",
 		IconURL:     "https://img.favpng.com/13/4/25/factory-logo-industry-computer-icons-png-favpng-BTgC49vrFrF2SmJZZywXwfL2s.jpg",
-		Attachments: attachment,
+		Attachments: []*mmmodel.SlackAttachment{attachment},
 	}
 	err := send(os.Getenv("MattermostNotificationsHook"), payload)
 	if err != nil {
@@ -96,27 +56,25 @@ func sendMattermostNotification(cluster *model.Cluster, message string) error {
 }
 
 func sendMattermostErrorNotification(cluster *model.Cluster, errorMessage error, message string) error {
-	attachment := []MMAttachment{}
-	attach := MMAttachment{
+	attachment := &mmmodel.SlackAttachment{
 		Color: "#FF0000",
+		Fields: []*mmmodel.SlackAttachmentField{
+			{Title: message, Short: false},
+			{Title: "Error Message", Value: errorMessage.Error(), Short: false},
+			{Title: "VPCID", Value: cluster.VPCID, Short: true},
+			{Title: "Environment", Value: cluster.Environment, Short: true},
+			{Title: "StateStore", Value: cluster.StateStore, Short: true},
+			{Title: "Apply", Value: strconv.FormatBool(cluster.Apply), Short: true},
+			{Title: "InstanceType", Value: cluster.InstanceType, Short: true},
+			{Title: "BackupRetentionPeriod", Value: cluster.BackupRetentionPeriod, Short: true},
+			{Title: "ClusterID", Value: cluster.ClusterID, Short: true},
+		},
 	}
 
-	attach = *attach.AddField(MMField{Title: message, Short: false}).
-		AddField(MMField{Title: "Error Message", Value: errorMessage.Error(), Short: false}).
-		AddField(MMField{Title: "VPCID", Value: cluster.VPCID, Short: true}).
-		AddField(MMField{Title: "Environment", Value: cluster.Environment, Short: true}).
-		AddField(MMField{Title: "StateStore", Value: cluster.StateStore, Short: true}).
-		AddField(MMField{Title: "Apply", Value: strconv.FormatBool(cluster.Apply), Short: true}).
-		AddField(MMField{Title: "InstanceType", Value: cluster.InstanceType, Short: true}).
-		AddField(MMField{Title: "BackupRetentionPeriod", Value: cluster.BackupRetentionPeriod, Short: true}).
-		AddField(MMField{Title: "ClusterID", Value: cluster.ClusterID, Short: true})
-
-	attachment = append(attachment, attach)
-
-	payload := MMSlashResponse{
+	payload := mmmodel.CommandResponse{
 		Username:    "Database Factory",
 		IconURL:     "https://img.favpng.com/13/4/25/factory-logo-industry-computer-icons-png-favpng-BTgC49vrFrF2SmJZZywXwfL2s.jpg",
-		Attachments: attachment,
+		Attachments: []*mmmodel.SlackAttachment{attachment},
 	}
 	err := send(os.Getenv("MattermostAlertsHook"), payload)
 	if err != nil {

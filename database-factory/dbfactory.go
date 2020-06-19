@@ -48,7 +48,7 @@ func CreateCluster(cluster *model.Cluster) error {
 		logger.Info("successfully applied Terraform template")
 		err = sendMattermostNotification(cluster, "The Database Factory successfully deployed a new RDS Aurora cluster")
 		if err != nil {
-			return errors.Wrap(err, "failed tο send Mattermost notification")
+			logger.WithError(err).Error("Failed to send Mattermost error notification")
 		}
 		return nil
 	}

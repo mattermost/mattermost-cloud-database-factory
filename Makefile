@@ -7,7 +7,7 @@ DOCKER_BUILD_IMAGE = golang:1.14.1
 DOCKER_BASE_IMAGE = alpine:3.11
 
 ## Tool Versions
-TERRAFORM_VERSION=0.12.26
+TERRAFORM_VERSION=0.12.28
 
 ################################################################################
 

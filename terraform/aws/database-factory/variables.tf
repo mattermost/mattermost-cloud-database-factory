@@ -116,13 +116,13 @@ variable "replica_scale_min" {
 }
 
 variable "replica_min" {
-  default     = 2
+  default     = 3
   type        = number
   description = "Number of replicas to deploy initially with the RDS Cluster."
 }
 
 variable "predefined_metric_type" {
-  default = "RDSReaderAverageCPUUtilization"
+  default = "RDSReaderAverageDatabaseConnections"
   type    = string
 }
 
@@ -133,8 +133,8 @@ variable "replica_scale_cpu" {
 }
 
 variable "replica_scale_connections" {
-  default     = ""
-  type        = string
+  default     = 10000
+  type        = number
   description = "Needs to be set when predefined_metric_type is RDSReaderAverageDatabaseConnections"
 }
 

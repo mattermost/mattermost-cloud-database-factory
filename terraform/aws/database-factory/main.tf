@@ -1,8 +1,6 @@
 terraform {
   required_version = ">= 0.12"
   backend "s3" {
-    # bucket = "terraform-cloud-monitoring-state-bucket-dev"
-    # key    = "mattermost-network-provisioning-rds"
     region = "us-east-1"
   }
 }

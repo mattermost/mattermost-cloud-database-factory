@@ -11,12 +11,15 @@ import (
 // CreateClusterRequest specifies the parameters for a new cluster.
 type CreateClusterRequest struct {
 	VPCID                 string `json:"vpcID,omitempty"`
-	ClusterID             string `json:"ClusterID,omitempty"`
+	ClusterID             string `json:"clusterID,omitempty"`
 	Environment           string `json:"environment,omitempty"`
 	StateStore            string `json:"stateStore,omitempty"`
 	Apply                 bool   `json:"apply,omitempty"`
 	InstanceType          string `json:"instanceType"`
 	BackupRetentionPeriod string `json:"backupRetentionPeriod"`
+	DBEngine              string `json:"dbEngine"`
+	MaxConnections        string `json:"maxConnections,omitempty"`
+	Replicas              string `json:"replicas"`
 }
 
 // NewCreateClusterRequestFromReader decodes the request and returns after validation and setting the defaults.
@@ -60,10 +63,22 @@ func (request *CreateClusterRequest) SetDefaults() {
 	}
 
 	if request.InstanceType == "" {
-		request.InstanceType = "db.r4.large"
+		request.InstanceType = "db.r5.large"
 	}
 
 	if request.BackupRetentionPeriod == "" {
 		request.BackupRetentionPeriod = "15"
+	}
+
+	if request.DBEngine == "" {
+		request.DBEngine = "postgresql"
+	}
+
+	if request.MaxConnections == "" {
+		request.MaxConnections = "auto"
+	}
+
+	if request.Replicas == "" {
+		request.Replicas = "3"
 	}
 }

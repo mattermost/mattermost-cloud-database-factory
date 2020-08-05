@@ -9,7 +9,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-var templateDir = "terraform/aws/database-factory"
+var templateDirMySQL = "terraform/aws/database-factory"
+var templateDirPostgreSQL = "terraform/aws/database-factory-postgresql"
 
 // InitCreateCluster is used to call the CreateCluster function.
 func InitCreateCluster(cluster *model.Cluster) {
@@ -28,6 +29,13 @@ func InitCreateCluster(cluster *model.Cluster) {
 func CreateCluster(cluster *model.Cluster) error {
 	logger.Info("Initialising Terraform")
 	stateObject := fmt.Sprintf("rds-cluster-multitenant-%s-%s", strings.Split(cluster.VPCID, "-")[1], cluster.ClusterID)
+
+	var templateDir string
+	if cluster.DBEngine == "mysql" {
+		templateDir = templateDirMySQL
+	} else {
+		templateDir = templateDirPostgreSQL
+	}
 
 	tf, err := terraform.New(templateDir, cluster.StateStore, logger)
 	if err != nil {

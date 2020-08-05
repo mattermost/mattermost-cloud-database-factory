@@ -34,7 +34,10 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 //     "apply": true,
 //     "instanceType": "db.r5.large",
 //     "clusterID": "12345678",
-//     "backupRetentionPeriod": "15"
+//     "backupRetentionPeriod": "15",
+//     "dbEngine: postgresql",
+//     "maxConnections": "150000"
+//     "replicas": "3"
 // }
 func handleCreateDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
 	createClusterRequest, err := model.NewCreateClusterRequestFromReader(r.Body)
@@ -52,6 +55,9 @@ func handleCreateDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
 		Apply:                 createClusterRequest.Apply,
 		InstanceType:          createClusterRequest.InstanceType,
 		BackupRetentionPeriod: createClusterRequest.BackupRetentionPeriod,
+		DBEngine:              createClusterRequest.DBEngine,
+		MaxConnections:        createClusterRequest.MaxConnections,
+		Replicas:              createClusterRequest.Replicas,
 	}
 
 	go dbfactory.InitCreateCluster(&cluster)

@@ -100,7 +100,7 @@ variable "monitoring_interval" {
 }
 
 variable "performance_insights_enabled" {
-  default = false
+  default = true
   type    = bool
 }
 
@@ -133,6 +133,7 @@ variable "replica_scale_cpu" {
   description = "Needs to be set when predefined_metric_type is RDSReaderAverageCPUUtilization"
 }
 
+# NOT IN USE. Currently the 50% of max_connections parameter is set as a limit.
 variable "replica_scale_connections" {
   default     = 100000
   type        = number

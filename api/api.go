@@ -21,11 +21,11 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 		return newContextHandler(context, handler)
 	}
 
-	clustersRouter := apiRouter.PathPrefix("/create").Subrouter()
-	clustersRouter.Handle("", addContext(handleCreateDBCluster)).Methods("POST")
+	clustersRouter := apiRouter.PathPrefix("/provision").Subrouter()
+	clustersRouter.Handle("", addContext(handleProvisionDBCluster)).Methods("POST")
 }
 
-// handleCreateDBCluster responds to POST /api/create, beginning the process of creating a new RDS Aurora cluster.
+// handleProvisionDBCluster responds to POST /api/provision, beginning the process of creating a new RDS Aurora cluster.
 // sample body:
 // {
 //     "vpcID": "vpc-12345678",
@@ -39,8 +39,8 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 //     "maxConnections": "150000"
 //     "replicas": "3"
 // }
-func handleCreateDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
-	createClusterRequest, err := model.NewCreateClusterRequestFromReader(r.Body)
+func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
+	provisionClusterRequest, err := model.NewProvisionClusterRequestFromReader(r.Body)
 	if err != nil {
 		c.Logger.WithError(err).Error("failed to decode request")
 		w.WriteHeader(http.StatusBadRequest)
@@ -48,19 +48,19 @@ func handleCreateDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
 	}
 
 	cluster := model.Cluster{
-		VPCID:                 createClusterRequest.VPCID,
-		ClusterID:             createClusterRequest.ClusterID,
-		Environment:           createClusterRequest.Environment,
-		StateStore:            createClusterRequest.StateStore,
-		Apply:                 createClusterRequest.Apply,
-		InstanceType:          createClusterRequest.InstanceType,
-		BackupRetentionPeriod: createClusterRequest.BackupRetentionPeriod,
-		DBEngine:              createClusterRequest.DBEngine,
-		MaxConnections:        createClusterRequest.MaxConnections,
-		Replicas:              createClusterRequest.Replicas,
+		VPCID:                 provisionClusterRequest.VPCID,
+		ClusterID:             provisionClusterRequest.ClusterID,
+		Environment:           provisionClusterRequest.Environment,
+		StateStore:            provisionClusterRequest.StateStore,
+		Apply:                 provisionClusterRequest.Apply,
+		InstanceType:          provisionClusterRequest.InstanceType,
+		BackupRetentionPeriod: provisionClusterRequest.BackupRetentionPeriod,
+		DBEngine:              provisionClusterRequest.DBEngine,
+		MaxConnections:        provisionClusterRequest.MaxConnections,
+		Replicas:              provisionClusterRequest.Replicas,
 	}
 
-	go dbfactory.InitCreateCluster(&cluster)
+	go dbfactory.InitProvisionCluster(&cluster)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)

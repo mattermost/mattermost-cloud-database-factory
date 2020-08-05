@@ -18,7 +18,7 @@ LABEL name="Mattermost Cloud Database Factory" \
   distribution-scope="public" \
   architecture="x86_64" \
   url="https://mattermost.com" \
-  io.k8s.description="Mattermost Cloud Database Factory creates and configures RDS Aurora Clusters" \
+  io.k8s.description="Mattermost Cloud Database Factory provisions and configures RDS Aurora Clusters" \
   io.k8s.display-name="Mattermost Cloud Database Factory"
 
 ENV CLOUD=/mattermost-cloud-database-factory/dbfactory \

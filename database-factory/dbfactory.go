@@ -12,9 +12,9 @@ import (
 var templateDirMySQL = "terraform/aws/database-factory"
 var templateDirPostgreSQL = "terraform/aws/database-factory-postgresql"
 
-// InitCreateCluster is used to call the CreateCluster function.
-func InitCreateCluster(cluster *model.Cluster) {
-	err := CreateCluster(cluster)
+// InitProvisionCluster is used to call the ProvisionCluster function.
+func InitProvisionCluster(cluster *model.Cluster) {
+	err := ProvisionCluster(cluster)
 	if err != nil {
 		logger.WithError(err).Error("failed to deploy RDS Aurora cluster")
 		err = sendMattermostErrorNotification(cluster, err, "The Database Factory failed to deploy RDS Aurora cluster")
@@ -25,8 +25,8 @@ func InitCreateCluster(cluster *model.Cluster) {
 	}
 }
 
-// CreateCluster is used to initiate Terraform and either Apply or Plan Terraform for the RDS Cluster deployments.
-func CreateCluster(cluster *model.Cluster) error {
+// ProvisionCluster is used to initiate Terraform and either Apply or Plan Terraform for the RDS Cluster deployments.
+func ProvisionCluster(cluster *model.Cluster) error {
 	logger.Info("Initialising Terraform")
 	stateObject := fmt.Sprintf("rds-cluster-multitenant-%s-%s", strings.Split(cluster.VPCID, "-")[1], cluster.ClusterID)
 

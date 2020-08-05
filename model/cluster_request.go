@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// CreateClusterRequest specifies the parameters for a new cluster.
-type CreateClusterRequest struct {
+// ProvisionClusterRequest specifies the parameters for a new cluster.
+type ProvisionClusterRequest struct {
 	VPCID                 string `json:"vpcID,omitempty"`
 	ClusterID             string `json:"clusterID,omitempty"`
 	Environment           string `json:"environment,omitempty"`
@@ -22,25 +22,25 @@ type CreateClusterRequest struct {
 	Replicas              string `json:"replicas"`
 }
 
-// NewCreateClusterRequestFromReader decodes the request and returns after validation and setting the defaults.
-func NewCreateClusterRequestFromReader(reader io.Reader) (*CreateClusterRequest, error) {
-	var createClusterRequest CreateClusterRequest
-	err := json.NewDecoder(reader).Decode(&createClusterRequest)
+// NewProvisionClusterRequestFromReader decodes the request and returns after validation and setting the defaults.
+func NewProvisionClusterRequestFromReader(reader io.Reader) (*ProvisionClusterRequest, error) {
+	var provisionClusterRequest ProvisionClusterRequest
+	err := json.NewDecoder(reader).Decode(&provisionClusterRequest)
 	if err != nil && err != io.EOF {
-		return nil, errors.Wrap(err, "failed to decode create cluster request")
+		return nil, errors.Wrap(err, "failed to decode provision cluster request")
 	}
 
-	err = createClusterRequest.Validate()
+	err = provisionClusterRequest.Validate()
 	if err != nil {
-		return nil, errors.Wrap(err, "create cluster request failed validation")
+		return nil, errors.Wrap(err, "provision cluster request failed validation")
 	}
-	createClusterRequest.SetDefaults()
+	provisionClusterRequest.SetDefaults()
 
-	return &createClusterRequest, nil
+	return &provisionClusterRequest, nil
 }
 
-// Validate validates the values of a cluster create request.
-func (request *CreateClusterRequest) Validate() error {
+// Validate validates the values of a cluster provision request.
+func (request *ProvisionClusterRequest) Validate() error {
 	if request.VPCID == "" {
 		return errors.Errorf("vpc id cannot be empty")
 	}
@@ -56,8 +56,8 @@ func (request *CreateClusterRequest) Validate() error {
 	return nil
 }
 
-// SetDefaults sets the default values for a cluster create request.
-func (request *CreateClusterRequest) SetDefaults() {
+// SetDefaults sets the default values for a cluster provision request.
+func (request *ProvisionClusterRequest) SetDefaults() {
 	if request.ClusterID == "" {
 		request.ClusterID = StringWithCharset(8, strings.Split(request.VPCID, "-")[1])
 	}

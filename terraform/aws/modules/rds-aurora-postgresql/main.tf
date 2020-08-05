@@ -1,9 +1,8 @@
 locals {
   master_password         = var.password == "" ? random_password.master_password.result : var.password
-  performance_kms_key     = join("", aws_kms_key.aurora_performance_insights_key.*.keys_id)
-  performance_kms_key_arn = join("", aws_kms_key.aurora_performance_insights_key.*.arn)
   database_id             = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
   max_connections         = var.max_postgresql_connections == "auto" || var.max_postgresql_connections == "" ? var.max_postgresql_connections_map[var.instance_type] : var.max_postgresql_connections
+  performance_insights_enabled = var.environment == "prod" ? var.performance_insights_enabled : false
 }
 
 # Random string to use as master password unless one is specified
@@ -21,23 +20,9 @@ resource "aws_kms_key" "aurora_storage_key" {
   deletion_window_in_days = 7
 }
 
-resource "aws_kms_key" "aurora_performance_insights_key" {
-  count = var.performance_insights_enabled == true ? 1 : 0
-
-  description             = format("rds-multitenant-performance-insights-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)
-  deletion_window_in_days = 7
-}
-
 resource "aws_kms_alias" "aurora_storage_alias" {
   name          = "alias/${format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
   target_key_id = aws_kms_key.aurora_storage_key.key_id
-}
-
-resource "aws_kms_alias" "aurora_performance_insights_alias" {
-  count = var.performance_insights_enabled == true ? 1 : 0
-
-  name          = "alias/${format("rds-multitenant-performance-insights-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
-  target_key_id = local.performance_kms_key
 }
 
 data "aws_security_group" "db_sg" {
@@ -101,8 +86,7 @@ resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
   monitoring_role_arn             = data.aws_iam_role.enhanced_monitoring.arn
   monitoring_interval             = var.monitoring_interval
   promotion_tier                  = count.index + 1
-  performance_insights_enabled    = var.performance_insights_enabled
-  performance_insights_kms_key_id = local.performance_kms_key_arn
+  performance_insights_enabled    = local.performance_insights_enabled
 
   tags = var.tags
 
@@ -139,7 +123,7 @@ resource "aws_appautoscaling_policy" "autoscaling_read_replica_count" {
 
     scale_in_cooldown  = var.replica_scale_in_cooldown
     scale_out_cooldown = var.replica_scale_out_cooldown
-    target_value       = var.predefined_metric_type == "RDSReaderAverageCPUUtilization" ? var.replica_scale_cpu : var.replica_scale_connections
+    target_value       = var.predefined_metric_type == "RDSReaderAverageCPUUtilization" ? var.replica_scale_cpu : tonumber(local.max_connections)/2
   }
 
   depends_on = [aws_appautoscaling_target.read_replica_count]

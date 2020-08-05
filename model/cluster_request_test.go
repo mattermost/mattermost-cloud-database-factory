@@ -7,15 +7,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateClusterRequestValid(t *testing.T) {
+func TestProvisionClusterRequestValid(t *testing.T) {
 	var testCases = []struct {
 		testName     string
-		request      *model.CreateClusterRequest
+		request      *model.ProvisionClusterRequest
 		requireError bool
 	}{
-		{"invalid vpcid", &model.CreateClusterRequest{VPCID: ""}, true},
-		{"invalid environment", &model.CreateClusterRequest{Environment: ""}, true},
-		{"invalid statestore", &model.CreateClusterRequest{StateStore: ""}, true},
+		{"invalid vpcid", &model.ProvisionClusterRequest{VPCID: ""}, true},
+		{"invalid environment", &model.ProvisionClusterRequest{Environment: ""}, true},
+		{"invalid statestore", &model.ProvisionClusterRequest{StateStore: ""}, true},
 	}
 
 	for _, tc := range testCases {

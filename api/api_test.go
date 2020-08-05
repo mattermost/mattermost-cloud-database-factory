@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateCluster(t *testing.T) {
+func TestProvisionCluster(t *testing.T) {
 	logger := testlib.MakeLogger(t)
 
 	router := mux.NewRouter()
@@ -27,19 +27,19 @@ func TestCreateCluster(t *testing.T) {
 	client := model.NewClient(ts.URL)
 
 	t.Run("invalid payload", func(t *testing.T) {
-		resp, err := http.Post(fmt.Sprintf("%s/api/create", ts.URL), "application/json", bytes.NewReader([]byte("invalid")))
+		resp, err := http.Post(fmt.Sprintf("%s/api/provision", ts.URL), "application/json", bytes.NewReader([]byte("invalid")))
 		require.NoError(t, err)
 		require.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 
 	t.Run("empty payload", func(t *testing.T) {
-		resp, err := http.Post(fmt.Sprintf("%s/api/create", ts.URL), "application/json", bytes.NewReader([]byte("")))
+		resp, err := http.Post(fmt.Sprintf("%s/api/provision", ts.URL), "application/json", bytes.NewReader([]byte("")))
 		require.NoError(t, err)
 		require.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 
 	t.Run("empty vpc id", func(t *testing.T) {
-		_, err := client.CreateCluster(&model.CreateClusterRequest{
+		_, err := client.ProvisionCluster(&model.ProvisionClusterRequest{
 			VPCID:                 "",
 			ClusterID:             "12345678",
 			Environment:           "test",
@@ -54,7 +54,7 @@ func TestCreateCluster(t *testing.T) {
 	})
 
 	t.Run("empty environment", func(t *testing.T) {
-		_, err := client.CreateCluster(&model.CreateClusterRequest{
+		_, err := client.ProvisionCluster(&model.ProvisionClusterRequest{
 			VPCID:                 "vpc-12345678",
 			ClusterID:             "12345678",
 			Environment:           "",
@@ -69,7 +69,7 @@ func TestCreateCluster(t *testing.T) {
 	})
 
 	t.Run("empty state store", func(t *testing.T) {
-		_, err := client.CreateCluster(&model.CreateClusterRequest{
+		_, err := client.ProvisionCluster(&model.ProvisionClusterRequest{
 			VPCID:                 "vpc-12345678",
 			ClusterID:             "12345678",
 			Environment:           "test",
@@ -84,7 +84,7 @@ func TestCreateCluster(t *testing.T) {
 	})
 
 	t.Run("valid", func(t *testing.T) {
-		cluster, err := client.CreateCluster(&model.CreateClusterRequest{
+		cluster, err := client.ProvisionCluster(&model.ProvisionClusterRequest{
 			VPCID:                 "vpc-12345678",
 			ClusterID:             "12345678",
 			Environment:           "test",

@@ -56,9 +56,9 @@ func (c *Client) doPost(u string, request interface{}) (*http.Response, error) {
 	return c.httpClient.Do(req)
 }
 
-// CreateCluster requests the creation of a RDS cluster from the configured provisioning server.
-func (c *Client) CreateCluster(request *CreateClusterRequest) (*Cluster, error) {
-	resp, err := c.doPost(c.buildURL("/api/create"), request)
+// ProvisionCluster requests the creation of a RDS cluster from the configured provisioning server.
+func (c *Client) ProvisionCluster(request *ProvisionClusterRequest) (*Cluster, error) {
+	resp, err := c.doPost(c.buildURL("/api/provision"), request)
 	if err != nil {
 		return nil, err
 	}

@@ -150,4 +150,6 @@ variable "replica_scale_out_cooldown" {
   description = "Cooldown in seconds before allowing further scaling operations after a scale out"
 }
 
-
+variable "max_postgresql_connections" {
+  type = string
+}

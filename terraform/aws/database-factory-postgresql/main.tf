@@ -13,7 +13,7 @@ provider "aws" {
 
 
 module "rds_setup" {
-  source                           = "../modules/rds-aurora"
+  source                           = "../modules/rds-aurora-postgresql"
   vpc_id                           = var.vpc_id
   db_id                            = var.db_id
   environment                      = var.environment
@@ -44,8 +44,8 @@ module "rds_setup" {
   replica_scale_connections        = var.replica_scale_connections
   replica_scale_in_cooldown        = var.replica_scale_in_cooldown
   replica_scale_out_cooldown       = var.replica_scale_out_cooldown
-  # Added for compatibility
   max_postgresql_connections       = var.max_postgresql_connections
+  max_postgresql_connections_map   = var.max_postgresql_connections_map
 
   tags = {
     Owner       = "cloud-team"

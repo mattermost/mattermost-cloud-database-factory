@@ -14,17 +14,17 @@ variable "environment" {
 }
 
 variable "port" {
-  default = "3306"
+  default = "5432"
   type    = string
 }
 
 variable "engine" {
-  default = "aurora-mysql"
+  default = "aurora-postgresql"
   type    = string
 }
 
 variable "engine_version" {
-  default = "5.7.12"
+  default = "11.7"
   type    = string
 }
 
@@ -85,7 +85,7 @@ variable "copy_tags_to_snapshot" {
 }
 
 variable "enabled_cloudwatch_logs_exports" {
-  default = ["audit", "error", "general", "slowquery"]
+  default = ["postgresql"]
   type    = list(string)
 }
 
@@ -100,7 +100,7 @@ variable "monitoring_interval" {
 }
 
 variable "performance_insights_enabled" {
-  default = false
+  default = true
   type    = bool
 }
 
@@ -115,10 +115,11 @@ variable "replica_scale_min" {
   type    = number
 }
 
+# Overwritten by database factory
 variable "replica_min" {
   default     = 3
   type        = number
-  description = "Number of replicas to deploy initially with the RDS Cluster."
+  description = "Number of replicas to deploy initially with the RDS Cluster. This is managed by the database factory app."
 }
 
 variable "predefined_metric_type" {
@@ -132,8 +133,9 @@ variable "replica_scale_cpu" {
   description = "Needs to be set when predefined_metric_type is RDSReaderAverageCPUUtilization"
 }
 
+# NOT IN USE. Currently the 50% of max_connections parameter is set as a limit.
 variable "replica_scale_connections" {
-  default     = 10000
+  default     = 100000
   type        = number
   description = "Needs to be set when predefined_metric_type is RDSReaderAverageDatabaseConnections"
 }
@@ -151,5 +153,21 @@ variable "replica_scale_out_cooldown" {
 }
 
 variable "max_postgresql_connections" {
+  default = ""
   type = string
+}
+
+variable "max_postgresql_connections_map" {
+  default = {
+    "db.t3.medium" = "50000"
+    "db.r5.large" = "50000"
+    "db.r5.xlarge" = "120000"
+    "db.r5.2xlarge" = "200000"
+    "db.r5.4xlarge" = "250000"
+    "db.r5.8xlarge" = "255000"
+    "db.r5.12xlarge" = "262143"
+    "db.r5.16xlarge" = "262143"
+    "db.r5.24xlarge" = "262143"
+  }
+  type = map
 }

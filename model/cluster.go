@@ -14,6 +14,9 @@ type Cluster struct {
 	Apply                 bool
 	InstanceType          string
 	BackupRetentionPeriod string
+	DBEngine              string
+	MaxConnections        string
+	Replicas              string
 }
 
 // ClusterFromReader decodes a json-encoded cluster from the given io.Reader.

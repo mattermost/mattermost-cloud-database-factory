@@ -3,6 +3,7 @@ package terraform
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	// "io/ioutil"
 	// "path"
@@ -36,7 +37,11 @@ func (c *Cmd) Init(remoteKey string) error {
 
 // Plan invokes terraform Plan.
 func (c *Cmd) Plan(cluster *model.Cluster) error {
-	_, _, err := c.run(
+	replicas, err := strconv.Atoi(cluster.Replicas)
+	if err != nil {
+		return errors.Wrap(err, "failed to transform replicas string to integer")
+	}
+	_, _, err = c.run(
 		"plan",
 		arg("input", "false"),
 		arg("var", fmt.Sprintf("vpc_id=%s", cluster.VPCID)),
@@ -44,6 +49,8 @@ func (c *Cmd) Plan(cluster *model.Cluster) error {
 		arg("var", fmt.Sprintf("environment=%s", cluster.Environment)),
 		arg("var", fmt.Sprintf("instance_type=%s", cluster.InstanceType)),
 		arg("var", fmt.Sprintf("backup_retention_period=%s", cluster.BackupRetentionPeriod)),
+		arg("var", fmt.Sprintf("max_postgresql_connections=%s", cluster.MaxConnections)),
+		arg("var", fmt.Sprintf("replica_min=%d", replicas)),
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to invoke terraform plan")
@@ -54,7 +61,11 @@ func (c *Cmd) Plan(cluster *model.Cluster) error {
 
 // Apply invokes terraform apply.
 func (c *Cmd) Apply(cluster *model.Cluster) error {
-	_, _, err := c.run(
+	replicas, err := strconv.Atoi(cluster.Replicas)
+	if err != nil {
+		return errors.Wrap(err, "failed to transform replicas string to integer")
+	}
+	_, _, err = c.run(
 		"apply",
 		arg("input", "false"),
 		arg("var", fmt.Sprintf("vpc_id=%s", cluster.VPCID)),
@@ -62,6 +73,8 @@ func (c *Cmd) Apply(cluster *model.Cluster) error {
 		arg("var", fmt.Sprintf("environment=%s", cluster.Environment)),
 		arg("var", fmt.Sprintf("instance_type=%s", cluster.InstanceType)),
 		arg("var", fmt.Sprintf("backup_retention_period=%s", cluster.BackupRetentionPeriod)),
+		arg("var", fmt.Sprintf("max_postgresql_connections=%s", cluster.MaxConnections)),
+		arg("var", fmt.Sprintf("replica_min=%d", replicas)),
 		arg("auto-approve"),
 	)
 	if err != nil {

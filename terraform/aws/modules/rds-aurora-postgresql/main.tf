@@ -1,8 +1,8 @@
 locals {
   master_password         = var.password == "" ? random_password.master_password.result : var.password
-  performance_kms_key     = join("", aws_kms_key.aurora_performance_insights_key.*.keys_id)
-  performance_kms_key_arn = join("", aws_kms_key.aurora_performance_insights_key.*.arn)
   database_id             = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
+  max_connections         = var.max_postgresql_connections == "auto" || var.max_postgresql_connections == "" ? var.max_postgresql_connections_map[var.instance_type] : var.max_postgresql_connections
+  performance_insights_enabled = var.environment == "prod" ? var.performance_insights_enabled : false
 }
 
 # Random string to use as master password unless one is specified
@@ -20,27 +20,13 @@ resource "aws_kms_key" "aurora_storage_key" {
   deletion_window_in_days = 7
 }
 
-resource "aws_kms_key" "aurora_performance_insights_key" {
-  count = var.performance_insights_enabled == true ? 1 : 0
-
-  description             = format("rds-multitenant-performance-insights-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)
-  deletion_window_in_days = 7
-}
-
 resource "aws_kms_alias" "aurora_storage_alias" {
   name          = "alias/${format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
   target_key_id = aws_kms_key.aurora_storage_key.key_id
 }
 
-resource "aws_kms_alias" "aurora_performance_insights_alias" {
-  count = var.performance_insights_enabled == true ? 1 : 0
-
-  name          = "alias/${format("rds-multitenant-performance-insights-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
-  target_key_id = local.performance_kms_key
-}
-
 data "aws_security_group" "db_sg" {
-  name = format("mattermost-cloud-%s-provisioning-%s-db-sg", var.environment, join("", split(".", split("/", data.aws_vpc.provisioning_vpc.cidr_block)[0])))
+  name = format("mattermost-cloud-%s-provisioning-%s-db-postgresql-sg", var.environment, join("", split(".", split("/", data.aws_vpc.provisioning_vpc.cidr_block)[0])))
 }
 
 data "aws_vpc" "provisioning_vpc" {
@@ -61,11 +47,11 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   preferred_backup_window         = var.preferred_backup_window
   preferred_maintenance_window    = var.preferred_maintenance_window
   port                            = var.port
-  db_subnet_group_name            = "mattermost-provisioner-db-${var.vpc_id}"
+  db_subnet_group_name            = "mattermost-provisioner-db-${var.vpc_id}-postgresql"
   vpc_security_group_ids          = [data.aws_security_group.db_sg.id]
   storage_encrypted               = var.storage_encrypted
   apply_immediately               = var.apply_immediately
-  db_cluster_parameter_group_name = "mattermost-provisioner-rds-cluster-pg"
+  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.cluster_parameter_group_postgresql.id
   copy_tags_to_snapshot           = var.copy_tags_to_snapshot
   enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
 
@@ -75,7 +61,7 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
       "MultitenantDatabaseID" = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
       "VpcID"                 = var.vpc_id,
       "DatabaseType"          = "multitenant-rds",
-      "MattermostCloudInstallationDatabase" = "MySQL/Aurora"
+      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
     },
     var.tags
   )
@@ -93,15 +79,14 @@ resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
   engine                          = var.engine
   engine_version                  = var.engine_version
   instance_class                  = var.instance_type
-  db_subnet_group_name            = "mattermost-provisioner-db-${var.vpc_id}"
-  db_parameter_group_name         = "mattermost-provisioner-rds-pg"
+  db_subnet_group_name            = "mattermost-provisioner-db-${var.vpc_id}-postgresql"
+  db_parameter_group_name         = aws_db_parameter_group.db_parameter_group_postgresql.id
   preferred_maintenance_window    = var.preferred_maintenance_window
   apply_immediately               = var.apply_immediately
   monitoring_role_arn             = data.aws_iam_role.enhanced_monitoring.arn
   monitoring_interval             = var.monitoring_interval
   promotion_tier                  = count.index + 1
-  performance_insights_enabled    = var.performance_insights_enabled
-  performance_insights_kms_key_id = local.performance_kms_key_arn
+  performance_insights_enabled    = local.performance_insights_enabled
 
   tags = var.tags
 
@@ -138,7 +123,7 @@ resource "aws_appautoscaling_policy" "autoscaling_read_replica_count" {
 
     scale_in_cooldown  = var.replica_scale_in_cooldown
     scale_out_cooldown = var.replica_scale_out_cooldown
-    target_value       = var.predefined_metric_type == "RDSReaderAverageCPUUtilization" ? var.replica_scale_cpu : var.replica_scale_connections
+    target_value       = var.predefined_metric_type == "RDSReaderAverageCPUUtilization" ? var.replica_scale_cpu : tonumber(local.max_connections)/2
   }
 
   depends_on = [aws_appautoscaling_target.read_replica_count]
@@ -189,4 +174,45 @@ resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_memory" {
   dimensions                = {DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier}
 }
 
+
+
+resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
+
+  name   = format("rds-cluster-multitenant-%s-%s-pg", split("-", var.vpc_id)[1], local.database_id)
+  family = "aurora-postgresql11"
+
+  parameter {
+    apply_method = "pending-reboot"
+    name         = "max_connections"
+    value        = local.max_connections
+  }
+
+  tags = merge(
+    {
+      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
+    },
+    var.tags
+  )
+}
+
+resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" {
+
+  name   = format("rds-cluster-multitenant-%s-%s-cluster-pg", split("-", var.vpc_id)[1], local.database_id)
+  family = "aurora-postgresql11"
+
+
+  parameter {
+    apply_method = "pending-reboot"
+    name         = "max_connections"
+    value        = local.max_connections
+  }
+
+  tags = merge(
+    {
+      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
+    },
+    var.tags
+  )
+
+}
 

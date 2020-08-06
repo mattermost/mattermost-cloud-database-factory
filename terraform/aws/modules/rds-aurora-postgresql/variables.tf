@@ -61,3 +61,5 @@ variable "replica_scale_in_cooldown" {}
 variable "replica_scale_out_cooldown" {}
 
 variable "max_postgresql_connections" {}
+
+variable "max_postgresql_connections_map" {}

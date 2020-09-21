@@ -63,3 +63,9 @@ variable "replica_scale_out_cooldown" {}
 variable "max_postgresql_connections" {}
 
 variable "max_postgresql_connections_map" {}
+
+variable "ram_memory_bytes" {}
+
+variable "memory_cache_proportion" {}
+
+variable "memory_alarm_limit" {}

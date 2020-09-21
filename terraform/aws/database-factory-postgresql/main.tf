@@ -46,6 +46,9 @@ module "rds_setup" {
   replica_scale_out_cooldown       = var.replica_scale_out_cooldown
   max_postgresql_connections       = var.max_postgresql_connections
   max_postgresql_connections_map   = var.max_postgresql_connections_map
+  ram_memory_bytes                 = var.ram_memory_bytes
+  memory_cache_proportion          = var.memory_cache_proportion
+  memory_alarm_limit               = var.memory_alarm_limit
 
   tags = {
     Owner       = "cloud-team"

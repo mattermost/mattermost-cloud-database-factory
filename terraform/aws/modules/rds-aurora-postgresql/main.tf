@@ -163,17 +163,29 @@ resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_memory" {
   alarm_name                = format("rds-db-instance-multitenant-%s-%s-%s-memory", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
   comparison_operator       = "LessThanOrEqualToThreshold"
   evaluation_periods        = "3"
-  metric_name               = "FreeableMemory"
-  namespace                 = "AWS/RDS"
-  period                    = "600"
-  statistic                 = "Average"
-  threshold                 = "100000000"
+  threshold                 = var.memory_alarm_limit
   alarm_description         = "This metric monitors RDS DB Instance freeable memory"
+  metric_query {
+    id          = "e1"
+    expression  = "m1+${var.memory_cache_proportion}*${var.ram_memory_bytes[var.instance_type]}"
+    label       = "Total Free Memory"
+    return_data = "true"
+  }
+
+  metric_query {
+    id                          = "m1"
+    metric {
+      metric_name               = "FreeableMemory"
+      namespace                 = "AWS/RDS"
+      period                    = "600"
+      stat                      = "Average"
+      dimensions                = {DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier}
+    }
+    return_data = "false"
+  }
   actions_enabled           = true  
   alarm_actions             = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
-  dimensions                = {DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier}
 }
-
 
 
 resource "aws_db_parameter_group" "db_parameter_group_postgresql" {

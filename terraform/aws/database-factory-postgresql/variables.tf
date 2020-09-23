@@ -171,3 +171,31 @@ variable "max_postgresql_connections_map" {
   }
   type = map
 }
+
+variable "ram_memory_bytes" {
+  default = {
+    "db.t3.medium" = "4294967296"
+    "db.r5.large" = "17179869184"
+    "db.r5.xlarge" = "34359738368"
+    "db.r5.2xlarge" = "68719476736"
+    "db.r5.4xlarge" = "137438953472"
+    "db.r5.8xlarge" = "274877906944"
+    "db.r5.12xlarge" = "412316860416"
+    "db.r5.16xlarge" = "549755813888"
+    "db.r5.24xlarge" = "824633720832"
+  }
+  type = map
+  description = "The RAM memory of each instance type in Bytes. A change in this variable should be reflected in database factory vertical scaling main.go as well."
+}
+
+variable "memory_alarm_limit" {
+  default = "100000000"
+  description = "Limit to trigger memory alarm. Number in Bytes (100MB)"
+  type = string
+}
+
+variable "memory_cache_proportion" {
+  default = 0.75
+  description = "Proportion of memory that is used for cache. By default it is 75%. A change in this variable should be reflected in database factory vertical scaling main.go as well."
+  type = number
+}

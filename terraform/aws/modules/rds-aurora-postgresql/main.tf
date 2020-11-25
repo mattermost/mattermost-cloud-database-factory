@@ -123,7 +123,7 @@ resource "aws_appautoscaling_policy" "autoscaling_read_replica_count" {
 
     scale_in_cooldown  = var.replica_scale_in_cooldown
     scale_out_cooldown = var.replica_scale_out_cooldown
-    target_value       = var.predefined_metric_type == "RDSReaderAverageCPUUtilization" ? var.replica_scale_cpu : tonumber(local.max_connections)/2
+    target_value       = var.predefined_metric_type == "RDSReaderAverageCPUUtilization" ? var.replica_scale_cpu : tonumber(local.max_connections)*0.6
   }
 
   depends_on = [aws_appautoscaling_target.read_replica_count]

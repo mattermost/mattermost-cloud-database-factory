@@ -24,7 +24,7 @@ variable "engine" {
 }
 
 variable "engine_version" {
-  default = "11.7"
+  default = "11.8"
   type    = string
 }
 
@@ -159,15 +159,15 @@ variable "max_postgresql_connections" {
 
 variable "max_postgresql_connections_map" {
   default = {
-    "db.t3.medium" = "50000"
-    "db.r5.large" = "50000"
-    "db.r5.xlarge" = "120000"
-    "db.r5.2xlarge" = "200000"
-    "db.r5.4xlarge" = "250000"
-    "db.r5.8xlarge" = "255000"
-    "db.r5.12xlarge" = "262143"
-    "db.r5.16xlarge" = "262143"
-    "db.r5.24xlarge" = "262143"
+    "db.t3.medium" = "415"
+    "db.r5.large" = "1675"
+    "db.r5.xlarge" = "3355"
+    "db.r5.2xlarge" = "6710"
+    "db.r5.4xlarge" = "13425"
+    "db.r5.8xlarge" = "26855"
+    "db.r5.12xlarge" = "40285"
+    "db.r5.16xlarge" = "53715"
+    "db.r5.24xlarge" = "80575"
   }
   type = map
 }

@@ -65,7 +65,7 @@ variable "preferred_backup_window" {
 }
 
 variable "preferred_maintenance_window" {
-  default = "sun:05:00-sun:06:00"
+  default = "sat:07:00-sat:08:00"
   type    = string
 }
 

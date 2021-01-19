@@ -219,6 +219,21 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
     value        = local.max_connections
   }
 
+  parameter {
+    name = "tcp_keepalives_count"
+    value = var.tcp_keepalives_count
+  }
+
+  parameter {
+    name = "tcp_keepalives_idle"
+    value = var.tcp_keepalives_idle
+  }
+
+  parameter {
+    name = "tcp_keepalives_interval"
+    value = var.tcp_keepalives_interval
+  }
+
   tags = merge(
     {
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"

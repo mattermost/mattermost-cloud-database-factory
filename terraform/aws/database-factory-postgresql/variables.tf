@@ -199,3 +199,22 @@ variable "memory_cache_proportion" {
   description = "Proportion of memory that is used for cache. By default it is 75%. A change in this variable should be reflected in database factory vertical scaling main.go as well."
   type = number
 }
+
+variable "tcp_keepalives_count" {
+  default = 5
+  description = "Maximum number of TCP keepalive retransmits.Specifies the number of TCP keepalive messages that can be lost before the server's connection to the client is considered dead. A value of 0 (the default) selects the operating system's default."
+  type = number
+}
+
+variable "tcp_keepalives_idle" {
+  default = 5
+  description = "Time between issuing TCP keepalives.Specifies the amount of time with no network activity after which the operating system should send a TCP keepalive message to the client. If this value is specified without units, it is taken as seconds. A value of 0 (the default) selects the operating system's default."
+  type = number
+}
+
+variable "tcp_keepalives_interval" {
+  default = 1
+  description = "Time between TCP keepalive retransmits. Specifies the amount of time after which a TCP keepalive message that has not been acknowledged by the client should be retransmitted. If this value is specified without units, it is taken as seconds. A value of 0 (the default) selects the operating system's default."
+  type = number
+}
+

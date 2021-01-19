@@ -52,6 +52,9 @@ module "rds_setup" {
   ram_memory_bytes                 = var.ram_memory_bytes
   memory_cache_proportion          = var.memory_cache_proportion
   memory_alarm_limit               = var.memory_alarm_limit
+  tcp_keepalives_count             = var.tcp_keepalives_count
+  tcp_keepalives_idle              = var.tcp_keepalives_idle
+  tcp_keepalives_interval          = var.tcp_keepalives_interval
 
   tags = {
     Owner       = "cloud-team"

@@ -69,3 +69,10 @@ variable "ram_memory_bytes" {}
 variable "memory_cache_proportion" {}
 
 variable "memory_alarm_limit" {}
+
+variable "tcp_keepalives_count" {}
+
+variable "tcp_keepalives_idle" {}
+
+variable "tcp_keepalives_interval" {}
+

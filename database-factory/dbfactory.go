@@ -54,7 +54,7 @@ func ProvisionCluster(cluster *model.Cluster) error {
 			return errors.Wrap(err, "failed to run Terraform apply")
 		}
 		logger.Info("successfully applied Terraform template")
-		err = sendMattermostNotification(cluster, "The Database Factory successfully deployed a new RDS Aurora cluster")
+		err = sendMattermostNotification(cluster, "The Database Factory successfully deployed/updated an RDS Aurora cluster")
 		if err != nil {
 			logger.WithError(err).Error("Failed to send Mattermost error notification")
 		}

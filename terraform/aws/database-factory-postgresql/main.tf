@@ -55,6 +55,7 @@ module "rds_setup" {
   tcp_keepalives_count             = var.tcp_keepalives_count
   tcp_keepalives_idle              = var.tcp_keepalives_idle
   tcp_keepalives_interval          = var.tcp_keepalives_interval
+  random_page_cost                 = var.random_page_cost
 
   tags = {
     Owner       = "cloud-team"

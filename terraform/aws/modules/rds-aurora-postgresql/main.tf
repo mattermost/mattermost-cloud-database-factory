@@ -200,6 +200,11 @@ resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
   }
 
   parameter {
+    name = "random_page_cost"
+    value = var.random_page_cost
+  }
+
+  parameter {
     name = "tcp_keepalives_count"
     value = var.tcp_keepalives_count
   }
@@ -232,6 +237,11 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
     apply_method = "pending-reboot"
     name         = "max_connections"
     value        = local.max_connections
+  }
+
+  parameter {
+    name = "random_page_cost"
+    value = var.random_page_cost
   }
 
   parameter {

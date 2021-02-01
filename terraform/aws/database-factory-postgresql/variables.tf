@@ -206,6 +206,12 @@ variable "tcp_keepalives_count" {
   type = number
 }
 
+variable "random_page_cost" {
+  default = 1.1
+  description = "Sets the planner's estimate of the cost of a non-sequentially-fetched disk page. The default is 4.0. This value can be overridden for tables and indexes in a particular tablespace by setting the tablespace parameter of the same name."
+  type = number
+}
+
 variable "tcp_keepalives_idle" {
   default = 5
   description = "Time between issuing TCP keepalives.Specifies the amount of time with no network activity after which the operating system should send a TCP keepalive message to the client. If this value is specified without units, it is taken as seconds. A value of 0 (the default) selects the operating system's default."

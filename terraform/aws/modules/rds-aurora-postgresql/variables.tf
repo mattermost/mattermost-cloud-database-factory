@@ -66,6 +66,8 @@ variable "max_postgresql_connections_map" {}
 
 variable "ram_memory_bytes" {}
 
+variable "random_page_cost" {}
+
 variable "memory_cache_proportion" {}
 
 variable "memory_alarm_limit" {}

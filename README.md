@@ -29,7 +29,7 @@ region = us-east-1
 Simply run the following:
 
 ```
-$ go install ./cmd/database-factory
+$ go install ./cmd/dbfactory
 ```
 
 ### Running
@@ -54,7 +54,7 @@ $ go test ./...
 Deploy a RDS Cluster with the command-line:
 
 ```
-dbfactory cluster create --environment <environment> --vpc-id vpc-xxxxxx --state-store=<state_storage_bucket> --instance-type <db_instance_type> --apply
+dbfactory cluster provision --environment <environment> --vpc-id vpc-xxxxxx --state-store=<state_storage_bucket> --instance-type <db_instance_type> --apply
 ```
 or via a API call:
 

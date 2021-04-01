@@ -73,3 +73,10 @@ or via a API call:
 The clusterID value is important for determining how the database factory will behave. If not clusterID is passed in, a random 8-digit ID is generated. If a clusterID of an existing cluster is specified, Terraform will try to update the existing cluster configuration.
 
 By setting **apply** to *false* or removing **--apply**, a Terraform plan will run, which can be used for Debug and testing purposes.
+
+**Note:** You need to export in your environment variables the aws profile and explicit set the aws region you want to run the change. An example is the following:
+
+```bash
+export AWS_PROFILE=mm-cloud-dev
+export AWS_REGION=us-east-1
+```

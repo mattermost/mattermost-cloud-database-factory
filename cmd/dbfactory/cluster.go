@@ -2,9 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/mattermost/mattermost-cloud-database-factory/model"
+	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -24,6 +28,7 @@ func init() {
 	clusterProvisionCmd.Flags().String("replicas", "3", "The total number of write/read replicas.")
 
 	clusterCmd.AddCommand(clusterProvisionCmd)
+	clusterCmd.AddCommand(newSearchCommand())
 }
 
 var clusterCmd = &cobra.Command{
@@ -78,4 +83,68 @@ func printJSON(data interface{}) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "    ")
 	return encoder.Encode(data)
+}
+
+// searchOpts the options to be used for the search command
+type searchOpts struct {
+	tags map[string]string
+}
+
+// newSearchCommand adds a subcommand in cluster in order to be
+// able to search by given tags.
+// - Example -
+// dbfactory cluster -t 'DatabaseType=multitenant-rds'
+func newSearchCommand() *cobra.Command {
+	opts := searchOpts{}
+
+	cmd := &cobra.Command{
+		Use:   "search",
+		Short: "Returns the RDS clusters which has been created by database factory server.",
+		RunE: func(command *cobra.Command, args []string) error {
+			sess, err := session.NewSession()
+			if err != nil {
+				return err
+			}
+			svc := rds.New(sess)
+			input := &rds.DescribeDBClustersInput{}
+
+			result, err := svc.DescribeDBClusters(input)
+			if err != nil {
+				return err
+			}
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"VPC", "Database ID"})
+
+			for _, r := range result.DBClusters {
+				group, err := svc.DescribeDBSubnetGroups(&rds.DescribeDBSubnetGroupsInput{
+					DBSubnetGroupName: r.DBSubnetGroup,
+				})
+				if err != nil {
+					fmt.Printf("Failed to DBSubnetGroup: %s \n\n", *r.DBSubnetGroup)
+					continue
+				}
+				if !contains(r.TagList, opts.tags) {
+					continue
+				}
+				table.Append([]string{*group.DBSubnetGroups[0].VpcId, *r.DBClusterIdentifier})
+			}
+
+			table.Render()
+			return nil
+		},
+	}
+	cmd.Flags().StringToStringVarP(&opts.tags, "tags", "t", map[string]string{}, "The tags as key/value which will be used for filtering.")
+	return cmd
+}
+
+func contains(tagsList []*rds.Tag, tags map[string]string) bool {
+	var found int
+	for key, value := range tags {
+		for _, t := range tagsList {
+			if key == *t.Key && value == *t.Value {
+				found++
+			}
+		}
+	}
+	return found == len(tags)
 }

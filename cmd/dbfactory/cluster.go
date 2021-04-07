@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/mattermost/mattermost-cloud-database-factory/model"
@@ -87,7 +89,9 @@ func printJSON(data interface{}) error {
 
 // searchOpts the options to be used for the search command
 type searchOpts struct {
-	tags map[string]string
+	tags   map[string]string
+	engine string
+	limit  int64
 }
 
 // newSearchCommand adds a subcommand in cluster in order to be
@@ -98,7 +102,7 @@ func newSearchCommand() *cobra.Command {
 	opts := searchOpts{}
 
 	cmd := &cobra.Command{
-		Use:   "search",
+		Use:   "get",
 		Short: "Returns the RDS clusters which has been created by database factory server.",
 		RunE: func(command *cobra.Command, args []string) error {
 			sess, err := session.NewSession()
@@ -106,7 +110,9 @@ func newSearchCommand() *cobra.Command {
 				return err
 			}
 			svc := rds.New(sess)
-			input := &rds.DescribeDBClustersInput{}
+			input := &rds.DescribeDBClustersInput{
+				MaxRecords: aws.Int64(opts.limit),
+			}
 
 			result, err := svc.DescribeDBClusters(input)
 			if err != nil {
@@ -126,7 +132,16 @@ func newSearchCommand() *cobra.Command {
 				if !contains(r.TagList, opts.tags) {
 					continue
 				}
-				table.Append([]string{*group.DBSubnetGroups[0].VpcId, *r.DBClusterIdentifier})
+
+				if *r.Engine != strings.ToLower(strings.TrimSpace(opts.engine)) {
+					continue
+				}
+				table.Append([]string{
+					*group.DBSubnetGroups[0].VpcId,
+					*r.DBClusterIdentifier,
+					*r.Engine,
+					*r.EngineVersion,
+				})
 			}
 
 			table.Render()
@@ -134,6 +149,8 @@ func newSearchCommand() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringToStringVarP(&opts.tags, "tags", "t", map[string]string{}, "The tags as key/value which will be used for filtering.")
+	cmd.Flags().StringVarP(&opts.engine, "engine", "e", "aurora-postgresql", "The Engine type of RDS.")
+	cmd.Flags().Int64VarP(&opts.limit, "limit", "l", 100, "The number of results which can be returned back.")
 	return cmd
 }
 

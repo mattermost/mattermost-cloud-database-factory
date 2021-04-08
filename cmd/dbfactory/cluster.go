@@ -119,7 +119,7 @@ func newSearchCommand() *cobra.Command {
 				return err
 			}
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"VPC", "Database ID"})
+			table.SetHeader([]string{"VPC", "Database ID", "Engine", "Engine Version", "Backup Retention"})
 
 			for _, r := range result.DBClusters {
 				group, err := svc.DescribeDBSubnetGroups(&rds.DescribeDBSubnetGroupsInput{
@@ -141,6 +141,7 @@ func newSearchCommand() *cobra.Command {
 					*r.DBClusterIdentifier,
 					*r.Engine,
 					*r.EngineVersion,
+					fmt.Sprint(*r.BackupRetentionPeriod),
 				})
 			}
 

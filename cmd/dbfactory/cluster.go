@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
+	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/mattermost/mattermost-cloud-database-factory/model"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
@@ -30,7 +31,13 @@ func init() {
 	clusterProvisionCmd.Flags().String("replicas", "3", "The total number of write/read replicas.")
 
 	clusterCmd.AddCommand(clusterProvisionCmd)
-	clusterCmd.AddCommand(newSearchCommand())
+
+	sess, err := session.NewSession()
+	if err != nil {
+		logger.WithError(err).Error()
+		return
+	}
+	clusterCmd.AddCommand(newSearchCommand(rds.New(sess)))
 }
 
 var clusterCmd = &cobra.Command{
@@ -98,18 +105,13 @@ type searchOpts struct {
 // able to search by given tags.
 // - Example -
 // dbfactory cluster -t 'DatabaseType=multitenant-rds'
-func newSearchCommand() *cobra.Command {
+func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
 	opts := searchOpts{}
 
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "Returns the RDS clusters which has been created by database factory server.",
 		RunE: func(command *cobra.Command, args []string) error {
-			sess, err := session.NewSession()
-			if err != nil {
-				return err
-			}
-			svc := rds.New(sess)
 			input := &rds.DescribeDBClustersInput{
 				MaxRecords: aws.Int64(opts.limit),
 			}
@@ -127,7 +129,7 @@ func newSearchCommand() *cobra.Command {
 				})
 				if err != nil {
 					fmt.Printf("Failed to DBSubnetGroup: %s \n\n", *r.DBSubnetGroup)
-					continue
+					return err
 				}
 				if !contains(r.TagList, opts.tags) {
 					continue

@@ -88,3 +88,15 @@ mocks:
 	# Mockgen cannot generate mocks for logrus when reading it from modules.
 	GO111MODULE=off $(GO) get github.com/sirupsen/logrus
 	$(GOPATH)/bin/mockgen -source $(GOPATH)/src/github.com/sirupsen/logrus/logrus.go -package mocks -destination ./internal/mocks/logger/logrus.go
+
+# Installs necessary tools for testing
+.PHONY: setup-test
+setup-test:
+	@echo Installing cover
+	go get golang.org/x/tools/cmd/cover
+
+# Running the tests
+.PHONY: test
+test:
+	@echo Running tests
+	go test ./... -v -covermode=count -coverprofile=coverage.out

@@ -30,9 +30,7 @@ jobs:
     steps:
     - checkout
     - *restore_cache
-    - run: |
-        go get golang.org/x/tools/cmd/cover
-    - run: go test ./... -v -covermode=count -coverprofile=coverage.out
+    - run: make setup-test test
     - *save_cache
     
   push-docker-pr:

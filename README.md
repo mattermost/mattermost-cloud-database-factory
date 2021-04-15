@@ -9,7 +9,7 @@ For the configuration Terraform templates and modules are being used, preconfigu
 ### Environment Setup
 
 1. Install [Go](https://golang.org/doc/install)
-2. Install [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html) version v0.11.14
+2. Install [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html) version v0.13.5
 3. Specify the region in your AWS config, e.g. `~/.aws/config`:
 ```
 [profile mm-cloud]

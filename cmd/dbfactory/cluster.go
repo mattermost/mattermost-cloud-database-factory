@@ -128,8 +128,7 @@ func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
 					DBSubnetGroupName: r.DBSubnetGroup,
 				})
 				if err != nil {
-					fmt.Printf("Failed to DBSubnetGroup: %s \n\n", *r.DBSubnetGroup)
-					return err
+					return errors.Wrapf(err, "failed to describe DBSubnetGroup: %s", *r.DBSubnetGroup)
 				}
 				if !contains(r.TagList, opts.tags) {
 					continue
@@ -159,11 +158,9 @@ func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
 
 func contains(tagsList []*rds.Tag, tags map[string]string) bool {
 	var found int
-	for key, value := range tags {
-		for _, t := range tagsList {
-			if key == *t.Key && value == *t.Value {
-				found++
-			}
+	for _, t := range tagsList {
+		if val, ok := tags[*t.Key]; ok && *t.Value == val {
+			found++
 		}
 	}
 	return found == len(tags)

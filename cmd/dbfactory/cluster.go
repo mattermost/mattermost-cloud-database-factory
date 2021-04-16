@@ -2,9 +2,16 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/rds"
+	"github.com/aws/aws-sdk-go/service/rds/rdsiface"
 	"github.com/mattermost/mattermost-cloud-database-factory/model"
+	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -24,6 +31,13 @@ func init() {
 	clusterProvisionCmd.Flags().String("replicas", "3", "The total number of write/read replicas.")
 
 	clusterCmd.AddCommand(clusterProvisionCmd)
+
+	sess, err := session.NewSession()
+	if err != nil {
+		logger.WithError(err).Error()
+		return
+	}
+	clusterCmd.AddCommand(newSearchCommand(rds.New(sess)))
 }
 
 var clusterCmd = &cobra.Command{
@@ -78,4 +92,76 @@ func printJSON(data interface{}) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "    ")
 	return encoder.Encode(data)
+}
+
+// searchOpts the options to be used for the search command
+type searchOpts struct {
+	tags   map[string]string
+	engine string
+	limit  int64
+}
+
+// newSearchCommand adds a subcommand in cluster in order to be
+// able to search by given tags.
+// - Example -
+// dbfactory cluster -t 'DatabaseType=multitenant-rds'
+func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
+	opts := searchOpts{}
+
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Returns the RDS clusters which has been created by database factory server.",
+		RunE: func(command *cobra.Command, args []string) error {
+			input := &rds.DescribeDBClustersInput{
+				MaxRecords: aws.Int64(opts.limit),
+			}
+
+			result, err := svc.DescribeDBClusters(input)
+			if err != nil {
+				return err
+			}
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"VPC", "Database ID", "Engine", "Engine Version", "Backup Retention"})
+
+			for _, r := range result.DBClusters {
+				group, err := svc.DescribeDBSubnetGroups(&rds.DescribeDBSubnetGroupsInput{
+					DBSubnetGroupName: r.DBSubnetGroup,
+				})
+				if err != nil {
+					return errors.Wrapf(err, "failed to describe DBSubnetGroup: %s", *r.DBSubnetGroup)
+				}
+				if !contains(r.TagList, opts.tags) {
+					continue
+				}
+
+				if *r.Engine != strings.ToLower(strings.TrimSpace(opts.engine)) {
+					continue
+				}
+				table.Append([]string{
+					*group.DBSubnetGroups[0].VpcId,
+					*r.DBClusterIdentifier,
+					*r.Engine,
+					*r.EngineVersion,
+					fmt.Sprint(*r.BackupRetentionPeriod),
+				})
+			}
+
+			table.Render()
+			return nil
+		},
+	}
+	cmd.Flags().StringToStringVarP(&opts.tags, "tags", "t", map[string]string{}, "The tags as key/value which will be used for filtering.")
+	cmd.Flags().StringVarP(&opts.engine, "engine", "e", "aurora-postgresql", "The Engine type of RDS.")
+	cmd.Flags().Int64VarP(&opts.limit, "limit", "l", 100, "The number of results which can be returned back.")
+	return cmd
+}
+
+func contains(tagsList []*rds.Tag, tags map[string]string) bool {
+	var found int
+	for _, t := range tagsList {
+		if val, ok := tags[*t.Key]; ok && *t.Value == val {
+			found++
+		}
+	}
+	return found == len(tags)
 }

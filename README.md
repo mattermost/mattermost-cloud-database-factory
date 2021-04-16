@@ -46,7 +46,7 @@ where dbfactory is an alias for /go/bin/dbfactory
 Run the go tests to test:
 
 ```
-$ go test ./...
+$ make test
 ```
 
 ### Deploying RDS Aurora Clusters
@@ -80,3 +80,20 @@ By setting **apply** to *false* or removing **--apply**, a Terraform plan will r
 export AWS_PROFILE=mm-cloud-dev
 export AWS_REGION=us-east-1
 ```
+### Fetching clusters by tags
+
+Return all available databases for the default engine `aurora-postgresql`
+```
+$ dbfactory cluster get
+```
+
+Return all available databases by a tag:
+```
+$ dbfactory cluster get -t 'DatabaseType=multitenant-rds'
+```
+
+Return all available databases by multiple tags:
+```
+$ dbfactory cluster get -t 'DatabaseType=multitenant-rds' -t 'Counter=2'
+```
+

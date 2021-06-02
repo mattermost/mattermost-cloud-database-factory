@@ -41,6 +41,13 @@ func (c *Cmd) Plan(cluster *model.Cluster) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to transform replicas string to integer")
 	}
+
+	var multitenantTag string
+	if cluster.DBProxy {
+		multitenantTag = "multitenant-rds-dbproxy"
+	} else {
+		multitenantTag = "multitenant-rds"
+	}
 	_, _, err = c.run(
 		"plan",
 		arg("input", "false"),
@@ -51,6 +58,7 @@ func (c *Cmd) Plan(cluster *model.Cluster) error {
 		arg("var", fmt.Sprintf("backup_retention_period=%s", cluster.BackupRetentionPeriod)),
 		arg("var", fmt.Sprintf("max_postgresql_connections=%s", cluster.MaxConnections)),
 		arg("var", fmt.Sprintf("replica_min=%d", replicas)),
+		arg("var", fmt.Sprintf("multitenant_tag=%s", multitenantTag)),
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to invoke terraform plan")
@@ -65,6 +73,13 @@ func (c *Cmd) Apply(cluster *model.Cluster) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to transform replicas string to integer")
 	}
+
+	var multitenantTag string
+	if cluster.DBProxy {
+		multitenantTag = "multitenant-rds-dbproxy"
+	} else {
+		multitenantTag = "multitenant-rds"
+	}
 	_, _, err = c.run(
 		"apply",
 		arg("input", "false"),
@@ -75,6 +90,7 @@ func (c *Cmd) Apply(cluster *model.Cluster) error {
 		arg("var", fmt.Sprintf("backup_retention_period=%s", cluster.BackupRetentionPeriod)),
 		arg("var", fmt.Sprintf("max_postgresql_connections=%s", cluster.MaxConnections)),
 		arg("var", fmt.Sprintf("replica_min=%d", replicas)),
+		arg("var", fmt.Sprintf("multitenant_tag=%s", multitenantTag)),
 		arg("auto-approve"),
 	)
 	if err != nil {

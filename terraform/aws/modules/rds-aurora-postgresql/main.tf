@@ -60,7 +60,7 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
       "Counter"               = 0,
       "MultitenantDatabaseID" = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
       "VpcID"                 = var.vpc_id,
-      "DatabaseType"          = "multitenant-rds",
+      "DatabaseType"          = var.multitenant_tag,
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
     },
     var.tags
@@ -153,7 +153,7 @@ resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_cpu" {
   statistic                 = "Average"
   threshold                 = "70"
   alarm_description         = "This metric monitors RDS DB Instance cpu utilization"
-  actions_enabled           = true  
+  actions_enabled           = true
   alarm_actions             = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
   dimensions                = {DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier}
 }
@@ -183,7 +183,7 @@ resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_memory" {
     }
     return_data = "false"
   }
-  actions_enabled           = true  
+  actions_enabled           = true
   alarm_actions             = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
 }
 

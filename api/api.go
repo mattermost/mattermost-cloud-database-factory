@@ -38,6 +38,7 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 //     "dbEngine: postgresql",
 //     "maxConnections": "150000"
 //     "replicas": "3"
+//     "dbProxy": true
 // }
 func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
 	provisionClusterRequest, err := model.NewProvisionClusterRequestFromReader(r.Body)
@@ -58,6 +59,7 @@ func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request
 		DBEngine:              provisionClusterRequest.DBEngine,
 		MaxConnections:        provisionClusterRequest.MaxConnections,
 		Replicas:              provisionClusterRequest.Replicas,
+		DBProxy:               provisionClusterRequest.DBProxy,
 	}
 
 	go dbfactory.InitProvisionCluster(&cluster)

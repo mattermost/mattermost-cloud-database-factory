@@ -78,3 +78,4 @@ variable "tcp_keepalives_idle" {}
 
 variable "tcp_keepalives_interval" {}
 
+variable "multitenant_tag" {}

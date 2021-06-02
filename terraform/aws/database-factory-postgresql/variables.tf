@@ -133,6 +133,12 @@ variable "replica_scale_cpu" {
   description = "Needs to be set when predefined_metric_type is RDSReaderAverageCPUUtilization"
 }
 
+variable "multitenant_tag" {
+  default     = ""
+  type        = string
+  description = "The tag that will be applied and identify the type of multitenant DB cluster(multitenant-rds-dbproxy or multitenant-rds)."
+}
+
 # NOT IN USE. Currently the 50% of max_connections parameter is set as a limit.
 variable "replica_scale_connections" {
   default     = 100000

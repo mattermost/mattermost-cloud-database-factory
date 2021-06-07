@@ -20,6 +20,7 @@ type ProvisionClusterRequest struct {
 	DBEngine              string `json:"dbEngine"`
 	MaxConnections        string `json:"maxConnections,omitempty"`
 	Replicas              string `json:"replicas"`
+	DBProxy               bool   `json:"dbProxy"`
 }
 
 // NewProvisionClusterRequestFromReader decodes the request and returns after validation and setting the defaults.

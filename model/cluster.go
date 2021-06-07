@@ -17,6 +17,7 @@ type Cluster struct {
 	DBEngine              string
 	MaxConnections        string
 	Replicas              string
+	DBProxy               bool
 }
 
 // ClusterFromReader decodes a json-encoded cluster from the given io.Reader.

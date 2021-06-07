@@ -29,6 +29,7 @@ func init() {
 	clusterProvisionCmd.Flags().String("db-engine", "postgresql", "The database engine. Can be mysql or postgresql")
 	clusterProvisionCmd.Flags().String("max-connections", "auto", "The max connections allowed in the DB cluster. This is applicable only to PostgreSQL engine")
 	clusterProvisionCmd.Flags().String("replicas", "3", "The total number of write/read replicas.")
+	clusterProvisionCmd.Flags().Bool("dbproxy", true, "If enabled the multitenant DB cluster will be used with a DB proxy.")
 
 	clusterCmd.AddCommand(clusterProvisionCmd)
 
@@ -63,6 +64,7 @@ var clusterProvisionCmd = &cobra.Command{
 		dbEngine, _ := command.Flags().GetString("db-engine")
 		maxConnections, _ := command.Flags().GetString("max-connections")
 		replicas, _ := command.Flags().GetString("replicas")
+		dbProxy, _ := command.Flags().GetBool("dbproxy")
 
 		cluster, err := client.ProvisionCluster(&model.ProvisionClusterRequest{
 			VPCID:                 vpcID,
@@ -75,6 +77,7 @@ var clusterProvisionCmd = &cobra.Command{
 			DBEngine:              dbEngine,
 			MaxConnections:        maxConnections,
 			Replicas:              replicas,
+			DBProxy:               dbProxy,
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to provision RDS cluster")

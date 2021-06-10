@@ -1,7 +1,7 @@
 locals {
-  master_password         = var.password == "" ? random_password.master_password.result : var.password
-  database_id             = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
-  max_connections         = var.max_postgresql_connections == "auto" || var.max_postgresql_connections == "" ? var.max_postgresql_connections_map[var.instance_type] : var.max_postgresql_connections
+  master_password              = var.password == "" ? random_password.master_password.result : var.password
+  database_id                  = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
+  max_connections              = var.max_postgresql_connections == "auto" || var.max_postgresql_connections == "" ? var.max_postgresql_connections_map[var.instance_type] : var.max_postgresql_connections
   performance_insights_enabled = var.environment == "prod" ? var.performance_insights_enabled : false
 }
 
@@ -73,22 +73,28 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
 }
 
 resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
-  count                           = var.replica_min
-  identifier                      = format("rds-db-instance-multitenant-%s-%s-%s", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
-  cluster_identifier              = aws_rds_cluster.provisioning_rds_cluster.id
-  engine                          = var.engine
-  engine_version                  = var.engine_version
-  instance_class                  = var.instance_type
-  db_subnet_group_name            = "mattermost-provisioner-db-${var.vpc_id}-postgresql"
-  db_parameter_group_name         = aws_db_parameter_group.db_parameter_group_postgresql.id
-  preferred_maintenance_window    = var.preferred_maintenance_window
-  apply_immediately               = var.apply_immediately
-  monitoring_role_arn             = data.aws_iam_role.enhanced_monitoring.arn
-  monitoring_interval             = var.monitoring_interval
-  promotion_tier                  = count.index + 1
-  performance_insights_enabled    = local.performance_insights_enabled
+  count                        = var.replica_min
+  identifier                   = format("rds-db-instance-multitenant-%s-%s-%s", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
+  cluster_identifier           = aws_rds_cluster.provisioning_rds_cluster.id
+  engine                       = var.engine
+  engine_version               = var.engine_version
+  instance_class               = var.instance_type
+  db_subnet_group_name         = "mattermost-provisioner-db-${var.vpc_id}-postgresql"
+  db_parameter_group_name      = aws_db_parameter_group.db_parameter_group_postgresql.id
+  preferred_maintenance_window = var.preferred_maintenance_window
+  apply_immediately            = var.apply_immediately
+  monitoring_role_arn          = data.aws_iam_role.enhanced_monitoring.arn
+  monitoring_interval          = var.monitoring_interval
+  promotion_tier               = count.index + 1
+  performance_insights_enabled = local.performance_insights_enabled
 
-  tags = var.tags
+  tags = merge(
+    {
+      "DatabaseType"                        = var.multitenant_tag,
+      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
+    },
+    var.tags
+  )
 
   lifecycle {
     ignore_changes = [
@@ -143,28 +149,28 @@ data "aws_sns_topic" "horizontal_scaling_sns_topic" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_cpu" {
-  count                     = var.replica_min
-  alarm_name                = format("rds-db-instance-multitenant-%s-%s-%s-cpu", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
-  comparison_operator       = "GreaterThanOrEqualToThreshold"
-  evaluation_periods        = "3"
-  metric_name               = "CPUUtilization"
-  namespace                 = "AWS/RDS"
-  period                    = "600"
-  statistic                 = "Average"
-  threshold                 = "70"
-  alarm_description         = "This metric monitors RDS DB Instance cpu utilization"
-  actions_enabled           = true
-  alarm_actions             = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
-  dimensions                = {DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier}
+  count               = var.replica_min
+  alarm_name          = format("rds-db-instance-multitenant-%s-%s-%s-cpu", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "3"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/RDS"
+  period              = "600"
+  statistic           = "Average"
+  threshold           = "70"
+  alarm_description   = "This metric monitors RDS DB Instance cpu utilization"
+  actions_enabled     = true
+  alarm_actions       = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
+  dimensions          = { DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier }
 }
 
 resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_memory" {
-  count                     = var.replica_min
-  alarm_name                = format("rds-db-instance-multitenant-%s-%s-%s-memory", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
-  comparison_operator       = "LessThanOrEqualToThreshold"
-  evaluation_periods        = "3"
-  threshold                 = var.memory_alarm_limit
-  alarm_description         = "This metric monitors RDS DB Instance freeable memory"
+  count               = var.replica_min
+  alarm_name          = format("rds-db-instance-multitenant-%s-%s-%s-memory", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "3"
+  threshold           = var.memory_alarm_limit
+  alarm_description   = "This metric monitors RDS DB Instance freeable memory"
   metric_query {
     id          = "e1"
     expression  = "m1+${var.memory_cache_proportion}*${var.ram_memory_bytes[var.instance_type]}"
@@ -173,18 +179,18 @@ resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_memory" {
   }
 
   metric_query {
-    id                          = "m1"
+    id = "m1"
     metric {
-      metric_name               = "FreeableMemory"
-      namespace                 = "AWS/RDS"
-      period                    = "600"
-      stat                      = "Average"
-      dimensions                = {DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier}
+      metric_name = "FreeableMemory"
+      namespace   = "AWS/RDS"
+      period      = "600"
+      stat        = "Average"
+      dimensions  = { DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier }
     }
     return_data = "false"
   }
-  actions_enabled           = true
-  alarm_actions             = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
+  actions_enabled = true
+  alarm_actions   = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
 }
 
 
@@ -200,22 +206,22 @@ resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
   }
 
   parameter {
-    name = "random_page_cost"
+    name  = "random_page_cost"
     value = var.random_page_cost
   }
 
   parameter {
-    name = "tcp_keepalives_count"
+    name  = "tcp_keepalives_count"
     value = var.tcp_keepalives_count
   }
 
   parameter {
-    name = "tcp_keepalives_idle"
+    name  = "tcp_keepalives_idle"
     value = var.tcp_keepalives_idle
   }
 
   parameter {
-    name = "tcp_keepalives_interval"
+    name  = "tcp_keepalives_interval"
     value = var.tcp_keepalives_interval
   }
 
@@ -240,22 +246,22 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
   }
 
   parameter {
-    name = "random_page_cost"
+    name  = "random_page_cost"
     value = var.random_page_cost
   }
 
   parameter {
-    name = "tcp_keepalives_count"
+    name  = "tcp_keepalives_count"
     value = var.tcp_keepalives_count
   }
 
   parameter {
-    name = "tcp_keepalives_idle"
+    name  = "tcp_keepalives_idle"
     value = var.tcp_keepalives_idle
   }
 
   parameter {
-    name = "tcp_keepalives_interval"
+    name  = "tcp_keepalives_interval"
     value = var.tcp_keepalives_interval
   }
 

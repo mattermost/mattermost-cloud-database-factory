@@ -88,6 +88,15 @@ jobs:
         path: gl-container-scanning-report.json
         destination: security-scan
 
+  release:
+    executor: default
+    steps:
+      - checkout
+      - run:
+          command: |
+            sudo apt update && sudo apt install hub git
+            GO111MODULE=on go get k8s.io/release/cmd/release-notes
+            make release
 workflows:
   version: 2
   ci-build:
@@ -148,3 +157,12 @@ workflows:
             only: /^v.*/
           branches:
             ignore: /.*/
+
+  publish-github-release:
+    jobs:
+      - release:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/

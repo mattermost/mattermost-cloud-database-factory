@@ -100,3 +100,15 @@ setup-test:
 test:
 	@echo Running tests
 	go test ./... -v -covermode=count -coverprofile=coverage.out
+
+# Cut a release
+.PHONY: release
+release:
+	@echo Cut a release
+	sh ./scripts/release.sh
+
+# Notify a release publish
+.PHONY: notify
+notify:
+	@echo Notify a release publish
+	sh ./scripts/notify.sh

@@ -119,12 +119,13 @@ func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
 				MaxRecords: aws.Int64(opts.limit),
 			}
 
+			instanceType := ""
 			result, err := svc.DescribeDBClusters(input)
 			if err != nil {
 				return err
 			}
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"VPC", "Database ID", "Engine", "Engine Version", "Backup Retention"})
+			table.SetHeader([]string{"VPC", "Database ID", "Engine", "Engine Version", "Backup Retention", "Instance Type"})
 
 			for _, r := range result.DBClusters {
 				group, err := svc.DescribeDBSubnetGroups(&rds.DescribeDBSubnetGroupsInput{
@@ -132,6 +133,15 @@ func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
 				})
 				if err != nil {
 					return errors.Wrapf(err, "failed to describe DBSubnetGroup: %s", *r.DBSubnetGroup)
+				}
+				if len(r.DBClusterMembers) > 0  {
+					instance, err := svc.DescribeDBInstances(&rds.DescribeDBInstancesInput{
+						DBInstanceIdentifier: r.DBClusterMembers[0].DBInstanceIdentifier,
+					})
+					instanceType = fmt.Sprint(*instance.DBInstances[0].DBInstanceClass)
+					if err != nil {
+						return errors.Wrapf(err, "failed to describe DBInstance: %s", *r.DBClusterMembers[0])
+					}
 				}
 				if !contains(r.TagList, opts.tags) {
 					continue
@@ -146,6 +156,7 @@ func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
 					*r.Engine,
 					*r.EngineVersion,
 					fmt.Sprint(*r.BackupRetentionPeriod),
+					instanceType,
 				})
 			}
 

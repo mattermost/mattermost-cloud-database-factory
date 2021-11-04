@@ -1,8 +1,13 @@
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
 locals {
   master_password              = var.password == "" ? random_password.master_password.result : var.password
   database_id                  = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
   max_connections              = var.max_postgresql_connections == "auto" || var.max_postgresql_connections == "" ? var.max_postgresql_connections_map[var.instance_type] : var.max_postgresql_connections
   performance_insights_enabled = var.environment == "prod" ? var.performance_insights_enabled : false
+  account_details              = join(":", [data.aws_region.current.name, data.aws_caller_identity.current.account_id])
 }
 
 # Random string to use as master password unless one is specified
@@ -274,3 +279,19 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
 
 }
 
+resource "aws_lambda_permission" "rds-cluster-cloudwatch-allow" {
+  statement_id  = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
+  action        = "lambda:InvokeFunction"
+  function_name = var.lambda_name
+  principal     = var.cwl_endpoint
+  source_arn    =  format("arn:aws:logs:${local.account_details}:log-group:/aws/rds/cluster/rds-cluster-multitenant-%s-%s/postgresql:*", split("-", var.vpc_id)[1], local.database_id)
+}
+
+resource "aws_cloudwatch_log_subscription_filter" "rds-cluster-cloudwatch-logs-to-es" {
+  depends_on      = [aws_lambda_permission.rds-cluster-cloudwatch-allow]
+  distribution    = "ByLogStream"
+  name            = format("rds-cluster-multitenant-%s-%s-subscription-filter", split("-", var.vpc_id)[1], local.database_id)
+  log_group_name  = format("/aws/rds/cluster/rds-cluster-multitenant-%s-%s/postgresql", split("-", var.vpc_id)[1], local.database_id)
+  filter_pattern  = "[date, time, message]"
+  destination_arn = var.lambda_arn
+}

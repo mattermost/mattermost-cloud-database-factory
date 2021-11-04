@@ -79,3 +79,21 @@ variable "tcp_keepalives_idle" {}
 variable "tcp_keepalives_interval" {}
 
 variable "multitenant_tag" {}
+
+variable "lambda_arn" {
+  default = ""
+  description = "Lambda logs-to-opensearch ARN"
+  type = string
+}
+
+variable "lambda_name" {
+  default = "logs-to-opensearch"
+  description = "Lambda which ships logs to opensearch"
+  type = string
+}
+
+variable "cwl_endpoint" {
+  default = "logs.us-east-1.amazonaws.com"
+  description = "Cloudwatch Logs endpoint"
+  type = string
+}

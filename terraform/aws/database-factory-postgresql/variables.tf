@@ -160,73 +160,90 @@ variable "replica_scale_out_cooldown" {
 
 variable "max_postgresql_connections" {
   default = ""
-  type = string
+  type    = string
 }
 
 variable "max_postgresql_connections_map" {
   default = {
-    "db.t3.medium" = "415"
-    "db.r5.large" = "1675"
-    "db.r5.xlarge" = "3355"
-    "db.r5.2xlarge" = "6710"
-    "db.r5.4xlarge" = "13425"
-    "db.r5.8xlarge" = "26855"
+    "db.t3.medium"   = "415"
+    "db.r5.large"    = "1675"
+    "db.r5.xlarge"   = "3355"
+    "db.r5.2xlarge"  = "6710"
+    "db.r5.4xlarge"  = "13425"
+    "db.r5.8xlarge"  = "26855"
     "db.r5.12xlarge" = "40285"
     "db.r5.16xlarge" = "53715"
     "db.r5.24xlarge" = "80575"
   }
-  type = map
+  type = map(any)
 }
 
 variable "ram_memory_bytes" {
   default = {
-    "db.t3.medium" = "4294967296"
-    "db.r5.large" = "17179869184"
-    "db.r5.xlarge" = "34359738368"
-    "db.r5.2xlarge" = "68719476736"
-    "db.r5.4xlarge" = "137438953472"
-    "db.r5.8xlarge" = "274877906944"
+    "db.t3.medium"   = "4294967296"
+    "db.r5.large"    = "17179869184"
+    "db.r5.xlarge"   = "34359738368"
+    "db.r5.2xlarge"  = "68719476736"
+    "db.r5.4xlarge"  = "137438953472"
+    "db.r5.8xlarge"  = "274877906944"
     "db.r5.12xlarge" = "412316860416"
     "db.r5.16xlarge" = "549755813888"
     "db.r5.24xlarge" = "824633720832"
   }
-  type = map
+  type        = map(any)
   description = "The RAM memory of each instance type in Bytes. A change in this variable should be reflected in database factory vertical scaling main.go as well."
 }
 
 variable "memory_alarm_limit" {
-  default = "100000000"
+  default     = "100000000"
   description = "Limit to trigger memory alarm. Number in Bytes (100MB)"
-  type = string
+  type        = string
 }
 
 variable "memory_cache_proportion" {
-  default = 0.75
+  default     = 0.75
   description = "Proportion of memory that is used for cache. By default it is 75%. A change in this variable should be reflected in database factory vertical scaling main.go as well."
-  type = number
+  type        = number
 }
 
 variable "tcp_keepalives_count" {
-  default = 5
+  default     = 5
   description = "Maximum number of TCP keepalive retransmits.Specifies the number of TCP keepalive messages that can be lost before the server's connection to the client is considered dead. A value of 0 (the default) selects the operating system's default."
-  type = number
+  type        = number
 }
 
 variable "random_page_cost" {
-  default = 1.1
+  default     = 1.1
   description = "Sets the planner's estimate of the cost of a non-sequentially-fetched disk page. The default is 4.0. This value can be overridden for tables and indexes in a particular tablespace by setting the tablespace parameter of the same name."
-  type = number
+  type        = number
 }
 
 variable "tcp_keepalives_idle" {
-  default = 5
+  default     = 5
   description = "Time between issuing TCP keepalives.Specifies the amount of time with no network activity after which the operating system should send a TCP keepalive message to the client. If this value is specified without units, it is taken as seconds. A value of 0 (the default) selects the operating system's default."
-  type = number
+  type        = number
 }
 
 variable "tcp_keepalives_interval" {
-  default = 1
+  default     = 1
   description = "Time between TCP keepalive retransmits. Specifies the amount of time after which a TCP keepalive message that has not been acknowledged by the client should be retransmitted. If this value is specified without units, it is taken as seconds. A value of 0 (the default) selects the operating system's default."
-  type = number
+  type        = number
+}
+
+variable "lambda_arn" {
+  default     = ""
+  description = "Lambda logs-to-opensearch ARN"
+  type        = string
+}
+
+variable "lambda_name" {
+  default     = "logs-to-opensearch"
+  description = "Lambda which ships logs to opensearch"
+  type        = string
+}
+variable "cwl_endpoint" {
+  default     = "logs.us-east-1.amazonaws.com"
+  description = "Cloudwatch Logs endpoint"
+  type        = string
 }
 

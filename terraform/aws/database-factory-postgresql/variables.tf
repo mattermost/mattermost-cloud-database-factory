@@ -1,31 +1,37 @@
 variable "vpc_id" {
-  default = ""
-  type    = string
+  default     = ""
+  description = "The VPC ID of the database cluster"
+  type        = string
 }
 
 variable "db_id" {
-  default = ""
-  type    = string
+  default     = ""
+  description = "The unique database ID of the cluster"
+  type        = string
 }
 
 variable "environment" {
-  default = ""
-  type    = string
+  default     = ""
+  description = "The name of the environment which will deploy to and will be added as a tag"
+  type        = string
 }
 
 variable "port" {
-  default = "5432"
-  type    = string
+  default     = "5432"
+  description = "The port on which the DB accepts connections"
+  type        = string
 }
 
 variable "engine" {
-  default = "aurora-postgresql"
-  type    = string
+  default     = "aurora-postgresql"
+  description = "The database engine to use"
+  type        = string
 }
 
 variable "engine_version" {
-  default = "11.9"
-  type    = string
+  default     = "11.9"
+  description = "The engine version to use"
+  type        = string
 }
 
 variable "username" {
@@ -40,68 +46,81 @@ variable "password" {
 }
 
 variable "final_snapshot_identifier_prefix" {
-  default = "final"
-  type    = string
+  default     = "final"
+  description = "The prefix name of your final DB snapshot when this DB instance is deleted"
+  type        = string
 }
 
 variable "skip_final_snapshot" {
-  default = false
-  type    = bool
+  default     = false
+  description = "Determines whether a final DB snapshot is created before the DB instance is deleted"
+  type        = bool
 }
 
 variable "deletion_protection" {
-  default = true
-  type    = bool
+  default     = true
+  description = "Specifies if the DB instance should have deletion protection enabled"
+  type        = bool
 }
 
 variable "backup_retention_period" {
-  default = ""
-  type    = string
+  default     = ""
+  description = "The days to retain backups for"
+  type        = string
 }
 
 variable "preferred_backup_window" {
-  default = "02:00-03:00"
-  type    = string
+  default     = "02:00-03:00"
+  description = "The daily time range during which automated backups are created if automated backups are enabled using the BackupRetentionPeriod parameter"
+  type        = string
 }
 
 variable "preferred_maintenance_window" {
-  default = "sat:09:00-sat:11:00"
-  type    = string
+  default     = "sat:09:00-sat:11:00"
+  description = "The window to perform maintenance in"
+  type        = string
 }
 
 variable "storage_encrypted" {
-  default = true
-  type    = bool
+  default     = true
+  description = "Specifies whether the DB cluster is encrypted"
+  type        = bool
 }
 
 variable "apply_immediately" {
-  default = true
-  type    = bool
+  default     = true
+  description = "Specifies whether any cluster modifications are applied immediately, or during the next maintenance window"
+  type        = bool
 }
 
 variable "copy_tags_to_snapshot" {
-  default = true
-  type    = bool
+  default     = true
+  description = "Copy all Cluster tags to snapshots"
+  type        = bool
 }
 
 variable "enabled_cloudwatch_logs_exports" {
-  default = ["postgresql"]
-  type    = list(string)
+  default     = ["postgresql"]
+  description = "Set of log types to enable for exporting to CloudWatch logs"
+  type        = list(string)
 }
 
 variable "instance_type" {
-  default = ""
-  type    = string
+  default     = ""
+  description = "The instance type of the RDS instance"
+  type        = string
 }
 
 variable "monitoring_interval" {
-  default = 60
-  type    = number
+  default     = 60
+  description = "The interval, in seconds, between points when Enhanced Monitoring metrics are collected for the DB instance"
+  type        = number
 }
 
 variable "performance_insights_enabled" {
-  default = true
-  type    = bool
+  default     = true
+  description = "Specifies whether Performance Insights are enabled"
+  type        = bool
 }
 
 variable "replica_scale_max" {
@@ -111,8 +130,9 @@ variable "replica_scale_max" {
 }
 
 variable "replica_scale_min" {
-  default = 1
-  type    = number
+  default     = 1
+  description = "Minimum number of replicas to scale down to"
+  type        = number
 }
 
 # Overwritten by database factory
@@ -123,8 +143,9 @@ variable "replica_min" {
 }
 
 variable "predefined_metric_type" {
-  default = "RDSReaderAverageDatabaseConnections"
-  type    = string
+  default     = "RDSReaderAverageDatabaseConnections"
+  description = "A predefined metric type"
+  type        = string
 }
 
 variable "replica_scale_cpu" {
@@ -160,73 +181,90 @@ variable "replica_scale_out_cooldown" {
 
 variable "max_postgresql_connections" {
   default = ""
-  type = string
+  type    = string
 }
 
 variable "max_postgresql_connections_map" {
   default = {
-    "db.t3.medium" = "415"
-    "db.r5.large" = "1675"
-    "db.r5.xlarge" = "3355"
-    "db.r5.2xlarge" = "6710"
-    "db.r5.4xlarge" = "13425"
-    "db.r5.8xlarge" = "26855"
+    "db.t3.medium"   = "415"
+    "db.r5.large"    = "1675"
+    "db.r5.xlarge"   = "3355"
+    "db.r5.2xlarge"  = "6710"
+    "db.r5.4xlarge"  = "13425"
+    "db.r5.8xlarge"  = "26855"
     "db.r5.12xlarge" = "40285"
     "db.r5.16xlarge" = "53715"
     "db.r5.24xlarge" = "80575"
   }
-  type = map
+  type = map(any)
 }
 
 variable "ram_memory_bytes" {
   default = {
-    "db.t3.medium" = "4294967296"
-    "db.r5.large" = "17179869184"
-    "db.r5.xlarge" = "34359738368"
-    "db.r5.2xlarge" = "68719476736"
-    "db.r5.4xlarge" = "137438953472"
-    "db.r5.8xlarge" = "274877906944"
+    "db.t3.medium"   = "4294967296"
+    "db.r5.large"    = "17179869184"
+    "db.r5.xlarge"   = "34359738368"
+    "db.r5.2xlarge"  = "68719476736"
+    "db.r5.4xlarge"  = "137438953472"
+    "db.r5.8xlarge"  = "274877906944"
     "db.r5.12xlarge" = "412316860416"
     "db.r5.16xlarge" = "549755813888"
     "db.r5.24xlarge" = "824633720832"
   }
-  type = map
+  type        = map(any)
   description = "The RAM memory of each instance type in Bytes. A change in this variable should be reflected in database factory vertical scaling main.go as well."
 }
 
 variable "memory_alarm_limit" {
-  default = "100000000"
+  default     = "100000000"
   description = "Limit to trigger memory alarm. Number in Bytes (100MB)"
-  type = string
+  type        = string
 }
 
 variable "memory_cache_proportion" {
-  default = 0.75
+  default     = 0.75
   description = "Proportion of memory that is used for cache. By default it is 75%. A change in this variable should be reflected in database factory vertical scaling main.go as well."
-  type = number
+  type        = number
 }
 
 variable "tcp_keepalives_count" {
-  default = 5
+  default     = 5
   description = "Maximum number of TCP keepalive retransmits.Specifies the number of TCP keepalive messages that can be lost before the server's connection to the client is considered dead. A value of 0 (the default) selects the operating system's default."
-  type = number
+  type        = number
 }
 
 variable "random_page_cost" {
-  default = 1.1
+  default     = 1.1
   description = "Sets the planner's estimate of the cost of a non-sequentially-fetched disk page. The default is 4.0. This value can be overridden for tables and indexes in a particular tablespace by setting the tablespace parameter of the same name."
-  type = number
+  type        = number
 }
 
 variable "tcp_keepalives_idle" {
-  default = 5
+  default     = 5
   description = "Time between issuing TCP keepalives.Specifies the amount of time with no network activity after which the operating system should send a TCP keepalive message to the client. If this value is specified without units, it is taken as seconds. A value of 0 (the default) selects the operating system's default."
-  type = number
+  type        = number
 }
 
 variable "tcp_keepalives_interval" {
-  default = 1
+  default     = 1
   description = "Time between TCP keepalive retransmits. Specifies the amount of time after which a TCP keepalive message that has not been acknowledged by the client should be retransmitted. If this value is specified without units, it is taken as seconds. A value of 0 (the default) selects the operating system's default."
-  type = number
+  type        = number
+}
+
+variable "lambda_arn" {
+  default     = ""
+  description = "Lambda logs-to-opensearch ARN"
+  type        = string
+}
+
+variable "lambda_name" {
+  default     = "logs-to-opensearch"
+  description = "Lambda which ships logs to opensearch"
+  type        = string
+}
+variable "cwl_endpoint" {
+  default     = "logs.us-east-1.amazonaws.com"
+  description = "Cloudwatch Logs endpoint"
+  type        = string
 }
 

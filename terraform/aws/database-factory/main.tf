@@ -48,7 +48,7 @@ module "rds_setup" {
   replica_scale_in_cooldown        = var.replica_scale_in_cooldown
   replica_scale_out_cooldown       = var.replica_scale_out_cooldown
   # Added for compatibility
-  max_postgresql_connections       = var.max_postgresql_connections
+  max_postgresql_connections = var.max_postgresql_connections
 
   tags = {
     Owner       = "cloud-team"

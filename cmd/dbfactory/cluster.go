@@ -125,7 +125,7 @@ func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
 				return err
 			}
 			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"VPC", "Database ID", "Engine", "Engine Version", "Backup Retention", "Instance Type"})
+			table.SetHeader([]string{"VPC", "Database ID", "Engine", "Engine Version", "Backup Retention", "Instance Type", "Database Type"})
 
 			for _, r := range result.DBClusters {
 				group, err := svc.DescribeDBSubnetGroups(&rds.DescribeDBSubnetGroupsInput{
@@ -133,6 +133,12 @@ func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
 				})
 				if err != nil {
 					return errors.Wrapf(err, "failed to describe DBSubnetGroup: %s", *r.DBSubnetGroup)
+				}
+				databaseType := ""
+				for _, tag := range r.TagList {
+					if *tag.Key == "DatabaseType" {
+						databaseType = *tag.Value
+					}
 				}
 				if len(r.DBClusterMembers) > 0  {
 					instance, err := svc.DescribeDBInstances(&rds.DescribeDBInstancesInput{
@@ -146,7 +152,6 @@ func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
 				if !contains(r.TagList, opts.tags) {
 					continue
 				}
-
 				if *r.Engine != strings.ToLower(strings.TrimSpace(opts.engine)) {
 					continue
 				}
@@ -157,6 +162,7 @@ func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
 					*r.EngineVersion,
 					fmt.Sprint(*r.BackupRetentionPeriod),
 					instanceType,
+					databaseType,
 				})
 			}
 

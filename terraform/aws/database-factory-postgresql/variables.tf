@@ -186,6 +186,7 @@ variable "max_postgresql_connections" {
 
 variable "max_postgresql_connections_map" {
   default = {
+    "db.t3.small"    = "198"
     "db.t3.medium"   = "415"
     "db.r5.large"    = "1675"
     "db.r5.xlarge"   = "3355"
@@ -195,12 +196,16 @@ variable "max_postgresql_connections_map" {
     "db.r5.12xlarge" = "40285"
     "db.r5.16xlarge" = "53715"
     "db.r5.24xlarge" = "80575"
+    "db.r6g.2xlarge" = "6958"
+    "db.r6g.xlarge"	 = "3479"
+    "db.r6g.large"	 = "1722"
   }
   type = map(any)
 }
 
 variable "ram_memory_bytes" {
   default = {
+    "db.t3.small"    = "2147483648"
     "db.t3.medium"   = "4294967296"
     "db.r5.large"    = "17179869184"
     "db.r5.xlarge"   = "34359738368"
@@ -210,6 +215,9 @@ variable "ram_memory_bytes" {
     "db.r5.12xlarge" = "412316860416"
     "db.r5.16xlarge" = "549755813888"
     "db.r5.24xlarge" = "824633720832"
+    "db.r6g.large"    = "17179869184"
+    "db.r6g.xlarge"   = "34359738368"
+    "db.r6g.2xlarge"  = "68719476736"
   }
   type        = map(any)
   description = "The RAM memory of each instance type in Bytes. A change in this variable should be reflected in database factory vertical scaling main.go as well."

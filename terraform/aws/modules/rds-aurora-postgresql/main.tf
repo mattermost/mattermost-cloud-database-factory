@@ -293,5 +293,5 @@ resource "aws_cloudwatch_log_subscription_filter" "rds-cluster-cloudwatch-logs-t
   name            = format("rds-cluster-multitenant-%s-%s-subscription-filter", split("-", var.vpc_id)[1], local.database_id)
   log_group_name  = format("/aws/rds/cluster/rds-cluster-multitenant-%s-%s/postgresql", split("-", var.vpc_id)[1], local.database_id)
   filter_pattern  = "[date, time, message]"
-  destination_arn = var.lambda_arn
+  destination_arn = "arn:aws:lambda:${local.account_details}:function:${var.lambda_name}"
 }

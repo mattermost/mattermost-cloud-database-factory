@@ -57,7 +57,6 @@ No modules.
 | <a name="input_environment"></a> [environment](#input\_environment) | The name of the environment which will deploy to and will be added as a tag | `string` | n/a | yes |
 | <a name="input_final_snapshot_identifier_prefix"></a> [final\_snapshot\_identifier\_prefix](#input\_final\_snapshot\_identifier\_prefix) | The prefix name of your final DB snapshot when this DB instance is deleted | `string` | n/a | yes |
 | <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | The instance type of the RDS instance | `string` | n/a | yes |
-| <a name="input_lambda_arn"></a> [lambda\_arn](#input\_lambda\_arn) | Lambda logs-to-opensearch ARN | `string` | `""` | no |
 | <a name="input_lambda_name"></a> [lambda\_name](#input\_lambda\_name) | Lambda which ships logs to opensearch | `string` | `"logs-to-opensearch"` | no |
 | <a name="input_max_postgresql_connections"></a> [max\_postgresql\_connections](#input\_max\_postgresql\_connections) | n/a | `string` | n/a | yes |
 | <a name="input_max_postgresql_connections_map"></a> [max\_postgresql\_connections\_map](#input\_max\_postgresql\_connections\_map) | n/a | `map(any)` | n/a | yes |

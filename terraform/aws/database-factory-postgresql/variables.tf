@@ -259,12 +259,6 @@ variable "tcp_keepalives_interval" {
   type        = number
 }
 
-variable "lambda_arn" {
-  default     = ""
-  description = "Lambda logs-to-opensearch ARN"
-  type        = string
-}
-
 variable "lambda_name" {
   default     = "logs-to-opensearch"
   description = "Lambda which ships logs to opensearch"

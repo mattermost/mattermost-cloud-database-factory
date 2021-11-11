@@ -196,11 +196,6 @@ variable "multitenant_tag" {
   description = "The tag that will be applied and identify the type of multitenant DB cluster(multitenant-rds-dbproxy or multitenant-rds)."
 }
 
-variable "lambda_arn" {
-  default     = ""
-  description = "Lambda logs-to-opensearch ARN"
-  type        = string
-}
 
 variable "lambda_name" {
   default     = "logs-to-opensearch"

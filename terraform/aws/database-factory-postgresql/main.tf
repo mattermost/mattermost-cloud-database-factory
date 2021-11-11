@@ -21,7 +21,6 @@ module "rds_setup" {
   db_id                            = var.db_id
   environment                      = var.environment
   port                             = var.port
-  name                             = "mattermost-cloud-${var.environment}-dbfactory"
   engine                           = var.engine
   engine_version                   = var.engine_version
   username                         = var.username

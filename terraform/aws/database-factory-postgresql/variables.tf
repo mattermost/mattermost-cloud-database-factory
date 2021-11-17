@@ -188,6 +188,8 @@ variable "max_postgresql_connections_map" {
   default = {
     "db.t3.small"    = "198"
     "db.t3.medium"   = "415"
+    "db.t4g.small"   = "198"
+    "db.t4g.medium"  = "415"
     "db.r5.large"    = "1675"
     "db.r5.xlarge"   = "3355"
     "db.r5.2xlarge"  = "6710"
@@ -207,6 +209,8 @@ variable "ram_memory_bytes" {
   default = {
     "db.t3.small"    = "2147483648"
     "db.t3.medium"   = "4294967296"
+    "db.t4g.small"   = "2147483648"
+    "db.t4g.medium"  = "4294967296"
     "db.r5.large"    = "17179869184"
     "db.r5.xlarge"   = "34359738368"
     "db.r5.2xlarge"  = "68719476736"

@@ -90,7 +90,7 @@ variable "enabled_cloudwatch_logs_exports" {
 
 variable "tags" {
   description = "A map of tags to assign to the resource"
-  type        = list(string)
+  type        = map(any)
 }
 
 variable "instance_type" {

@@ -21,7 +21,6 @@ module "rds_setup" {
   db_id                            = var.db_id
   environment                      = var.environment
   port                             = var.port
-  name                             = "mattermost-cloud-${var.environment}-dbfactory"
   engine                           = var.engine
   engine_version                   = var.engine_version
   username                         = var.username
@@ -57,7 +56,6 @@ module "rds_setup" {
   tcp_keepalives_interval          = var.tcp_keepalives_interval
   random_page_cost                 = var.random_page_cost
   multitenant_tag                  = var.multitenant_tag
-  lambda_arn                       = var.lambda_arn
   lambda_name                      = var.lambda_name
   cwl_endpoint                     = var.cwl_endpoint
 

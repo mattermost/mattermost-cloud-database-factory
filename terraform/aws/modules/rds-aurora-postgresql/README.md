@@ -57,7 +57,6 @@ No modules.
 | <a name="input_environment"></a> [environment](#input\_environment) | The name of the environment which will deploy to and will be added as a tag | `string` | n/a | yes |
 | <a name="input_final_snapshot_identifier_prefix"></a> [final\_snapshot\_identifier\_prefix](#input\_final\_snapshot\_identifier\_prefix) | The prefix name of your final DB snapshot when this DB instance is deleted | `string` | n/a | yes |
 | <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | The instance type of the RDS instance | `string` | n/a | yes |
-| <a name="input_lambda_arn"></a> [lambda\_arn](#input\_lambda\_arn) | Lambda logs-to-opensearch ARN | `string` | `""` | no |
 | <a name="input_lambda_name"></a> [lambda\_name](#input\_lambda\_name) | Lambda which ships logs to opensearch | `string` | `"logs-to-opensearch"` | no |
 | <a name="input_max_postgresql_connections"></a> [max\_postgresql\_connections](#input\_max\_postgresql\_connections) | n/a | `string` | n/a | yes |
 | <a name="input_max_postgresql_connections_map"></a> [max\_postgresql\_connections\_map](#input\_max\_postgresql\_connections\_map) | n/a | `map(any)` | n/a | yes |
@@ -82,7 +81,7 @@ No modules.
 | <a name="input_replica_scale_out_cooldown"></a> [replica\_scale\_out\_cooldown](#input\_replica\_scale\_out\_cooldown) | Cooldown in seconds before allowing further scaling operations after a scale out | `number` | n/a | yes |
 | <a name="input_skip_final_snapshot"></a> [skip\_final\_snapshot](#input\_skip\_final\_snapshot) | Determines whether a final DB snapshot is created before the DB instance is deleted | `bool` | n/a | yes |
 | <a name="input_storage_encrypted"></a> [storage\_encrypted](#input\_storage\_encrypted) | Specifies whether the DB cluster is encrypted | `bool` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to assign to the resource | `list(string)` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to assign to the resource | `map(any)` | n/a | yes |
 | <a name="input_tcp_keepalives_count"></a> [tcp\_keepalives\_count](#input\_tcp\_keepalives\_count) | Maximum number of TCP keepalive retransmits.Specifies the number of TCP keepalive messages that can be lost before the server's connection to the client is considered dead. A value of 0 (the default) selects the operating system's default. | `number` | n/a | yes |
 | <a name="input_tcp_keepalives_idle"></a> [tcp\_keepalives\_idle](#input\_tcp\_keepalives\_idle) | Time between issuing TCP keepalives.Specifies the amount of time with no network activity after which the operating system should send a TCP keepalive message to the client. If this value is specified without units, it is taken as seconds. A value of 0 (the default) selects the operating system's default. | `number` | n/a | yes |
 | <a name="input_tcp_keepalives_interval"></a> [tcp\_keepalives\_interval](#input\_tcp\_keepalives\_interval) | Time between TCP keepalive retransmits. Specifies the amount of time after which a TCP keepalive message that has not been acknowledged by the client should be retransmitted. If this value is specified without units, it is taken as seconds. A value of 0 (the default) selects the operating system's default. | `number` | n/a | yes |

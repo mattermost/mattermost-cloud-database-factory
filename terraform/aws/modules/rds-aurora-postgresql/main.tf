@@ -202,7 +202,7 @@ resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_memory" {
 resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
 
   name   = format("rds-cluster-multitenant-%s-%s-pg", split("-", var.vpc_id)[1], local.database_id)
-  family = "aurora-postgresql11"
+  family = "aurora-postgresql12"
 
   parameter {
     apply_method = "pending-reboot"
@@ -241,7 +241,7 @@ resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
 resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" {
 
   name   = format("rds-cluster-multitenant-%s-%s-cluster-pg", split("-", var.vpc_id)[1], local.database_id)
-  family = "aurora-postgresql11"
+  family = "aurora-postgresql12"
 
 
   parameter {
@@ -285,6 +285,12 @@ resource "aws_lambda_permission" "rds-cluster-cloudwatch-allow" {
   function_name = var.lambda_name
   principal     = var.cwl_endpoint
   source_arn    =  format("arn:aws:logs:${local.account_details}:log-group:/aws/rds/cluster/rds-cluster-multitenant-%s-%s/postgresql:*", split("-", var.vpc_id)[1], local.database_id)
+  depends_on = [aws_rds_cluster.provisioning_rds_cluster]
+}
+
+resource "aws_cloudwatch_log_group" "rds-cluster-log-group" {
+  name            = format("rds-cluster-multitenant-%s-%s/postgresql", split("-", var.vpc_id)[1], local.database_id)
+  depends_on = [aws_rds_cluster.provisioning_rds_cluster]
 }
 
 resource "aws_cloudwatch_log_subscription_filter" "rds-cluster-cloudwatch-logs-to-es" {

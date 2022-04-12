@@ -27,6 +27,9 @@ func (c *Cmd) Init(remoteKey string) error {
 		arg("backend-config", fmt.Sprintf("bucket=%s", c.remoteStateBucket)),
 		arg("backend-config", fmt.Sprintf("key=%s", remoteKey)),
 		arg("backend-config", "region=us-east-1"),
+		//arg("migrate-state"),
+		//arg("force-copy"),
+		arg("reconfigure"),
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to invoke terraform init")

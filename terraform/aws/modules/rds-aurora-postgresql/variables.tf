@@ -195,16 +195,3 @@ variable "multitenant_tag" {
   type        = string
   description = "The tag that will be applied and identify the type of multitenant DB cluster(multitenant-rds-dbproxy or multitenant-rds)."
 }
-
-
-variable "lambda_name" {
-  default     = "logs-to-opensearch"
-  description = "Lambda which ships logs to opensearch"
-  type        = string
-}
-
-variable "cwl_endpoint" {
-  default     = "logs.us-east-1.amazonaws.com"
-  description = "Cloudwatch Logs endpoint"
-  type        = string
-}

@@ -26,7 +26,7 @@ func init() {
 	clusterProvisionCmd.Flags().Bool("apply", false, "If disabled, only a Terraform plan will run instead of Terraform apply")
 	clusterProvisionCmd.Flags().String("instance-type", "db.r5.large", "The instance type used for Aurora cluster replicas")
 	clusterProvisionCmd.Flags().String("backup-retention-period", "15", "The retention period for the DB instance backups")
-	clusterProvisionCmd.Flags().String("db-engine", "postgresql", "The database engine. Can be mysql or postgresql")
+	clusterProvisionCmd.Flags().String("db-engine", "postgres", "The database engine. Can be mysql or postgres")
 	clusterProvisionCmd.Flags().String("max-connections", "auto", "The max connections allowed in the DB cluster. This is applicable only to PostgreSQL engine")
 	clusterProvisionCmd.Flags().String("replicas", "3", "The total number of write/read replicas.")
 	clusterProvisionCmd.Flags().Bool("dbproxy", true, "If enabled the multitenant DB cluster will be used with a DB proxy.")
@@ -140,7 +140,7 @@ func newSearchCommand(svc rdsiface.RDSAPI) *cobra.Command {
 						databaseType = *tag.Value
 					}
 				}
-				if len(r.DBClusterMembers) > 0  {
+				if len(r.DBClusterMembers) > 0 {
 					instance, err := svc.DescribeDBInstances(&rds.DescribeDBInstancesInput{
 						DBInstanceIdentifier: r.DBClusterMembers[0].DBInstanceIdentifier,
 					})

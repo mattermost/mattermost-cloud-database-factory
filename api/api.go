@@ -35,7 +35,7 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 //     "instanceType": "db.r5.large",
 //     "clusterID": "12345678",
 //     "backupRetentionPeriod": "15",
-//     "dbEngine: postgresql",
+//     "dbEngine: postgres",
 //     "maxConnections": "150000"
 //     "replicas": "3"
 //     "dbProxy": true

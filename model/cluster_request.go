@@ -72,7 +72,7 @@ func (request *ProvisionClusterRequest) SetDefaults() {
 	}
 
 	if request.DBEngine == "" {
-		request.DBEngine = "postgresql"
+		request.DBEngine = "postgres"
 	}
 
 	if request.MaxConnections == "" {

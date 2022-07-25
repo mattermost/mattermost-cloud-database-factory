@@ -169,6 +169,22 @@ resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_cpu" {
   dimensions          = { DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier }
 }
 
+resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_connections" {
+  count               = var.replica_min
+  alarm_name          = format("rds-db-instance-multitenant-%s-%s-%s-connections", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "3"
+  metric_name         = "DatabaseConnections"
+  namespace           = "AWS/RDS"
+  period              = "600"
+  statistic           = "Average"
+  threshold           = var.max_postgresql_connections_map[var.instance_type] * var.connections_safety_percentage
+  alarm_description   = "This metric monitors RDS DB Instance connections"
+  actions_enabled     = true
+  alarm_actions       = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
+  dimensions          = { DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier }
+}
+
 resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_memory" {
   count               = var.replica_min
   alarm_name          = format("rds-db-instance-multitenant-%s-%s-%s-memory", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))

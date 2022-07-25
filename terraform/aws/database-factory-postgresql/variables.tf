@@ -200,9 +200,16 @@ variable "max_postgresql_connections_map" {
     "db.r5.12xlarge" = "40285"
     "db.r5.16xlarge" = "53715"
     "db.r5.24xlarge" = "80575"
+    "db.r6g.16xlarge" = "57690"
+    "db.r6g.12xlarge" = "43260"
+    "db.r6g.8xlarge" = "28840"
+    "db.r6g.4xlarge" = "14420"
     "db.r6g.2xlarge" = "6958"
     "db.r6g.xlarge"  = "3479"
     "db.r6g.large"   = "1722"
+    "db.t4g.large"   = "900"
+    "db.t4g.medium"   = "450"
+    "db.t4g.small"   = "225"
   }
   type = map(any)
 }
@@ -226,6 +233,11 @@ variable "ram_memory_bytes" {
     "db.r6g.large"   = "17179869184"
     "db.r6g.xlarge"  = "34359738368"
     "db.r6g.2xlarge" = "68719476736"
+    "db.r6g.4xlarge" = "137438953472"
+    "db.r6g.8xlarge" = "274877906944"
+    "db.r6g.12xlarge" = "412316860416"
+    "db.r6g.16xlarge" = "549755813888"
+    "db.r6g.24xlarge" = "824633720832"
   }
   type        = map(any)
   description = "The RAM memory of each instance type in Bytes. A change in this variable should be reflected in database factory vertical scaling main.go as well."
@@ -240,6 +252,12 @@ variable "memory_alarm_limit" {
 variable "memory_cache_proportion" {
   default     = 0.75
   description = "Proportion of memory that is used for cache. By default it is 75%. A change in this variable should be reflected in database factory vertical scaling main.go as well."
+  type        = number
+}
+
+variable "connections_safety_percentage" {
+  default     = 0.90
+  description = "Percentage of max connections that when reached should trigger vertical scaling."
   type        = number
 }
 

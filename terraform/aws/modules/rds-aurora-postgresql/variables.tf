@@ -171,6 +171,11 @@ variable "memory_cache_proportion" {
   type        = number
 }
 
+variable "connections_safety_percentage" {
+  description = "Percentage of max connections that when reached should trigger vertical scaling."
+  type        = number
+}
+
 variable "memory_alarm_limit" {
   description = "Limit to trigger memory alarm. Number in Bytes (100MB)"
   type        = string

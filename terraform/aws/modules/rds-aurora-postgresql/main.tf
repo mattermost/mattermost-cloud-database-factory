@@ -5,7 +5,7 @@ data "aws_region" "current" {}
 locals {
   master_password              = var.password == "" ? random_password.master_password.result : var.password
   database_id                  = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
-  max_connections              = var.max_postgresql_connections == "auto" || var.max_postgresql_connections == "" ? var.max_postgresql_connections_map[var.instance_type] : var.max_postgresql_connections
+  max_connections              = var.ram_memory_bytes[var.instance_type]/9531392
   performance_insights_enabled = var.environment == "prod" ? var.performance_insights_enabled : false
   account_details              = join(":", [data.aws_region.current.name, data.aws_caller_identity.current.account_id])
 }
@@ -169,6 +169,28 @@ resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_cpu" {
   dimensions          = { DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier }
 }
 
+resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_connections" {
+  count               = var.replica_min
+  alarm_name          = format("rds-db-instance-multitenant-%s-%s-%s-connections", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "3"
+  metric_name         = "DatabaseConnections"
+  namespace           = "AWS/RDS"
+  period              = "600"
+  statistic           = "Average"
+  threshold           = local.max_connections * var.connections_safety_percentage
+  alarm_description   = "This metric monitors RDS DB Instance connections"
+  actions_enabled     = true
+  alarm_actions       = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
+  dimensions          = { DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier }
+
+  lifecycle {
+    ignore_changes = [
+      threshold,
+    ]
+  }
+}
+
 resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_memory" {
   count               = var.replica_min
   alarm_name          = format("rds-db-instance-multitenant-%s-%s-%s-memory", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
@@ -196,6 +218,12 @@ resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_memory" {
   }
   actions_enabled = true
   alarm_actions   = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
+
+  lifecycle {
+    ignore_changes = [
+      metric_query
+    ]
+  }
 }
 
 
@@ -207,7 +235,7 @@ resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
   parameter {
     apply_method = "pending-reboot"
     name         = "max_connections"
-    value        = local.max_connections
+    value        = "{DBInstanceClassMemory/9531392}"
   }
 
   parameter {
@@ -247,7 +275,7 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
   parameter {
     apply_method = "pending-reboot"
     name         = "max_connections"
-    value        = local.max_connections
+    value        = "{DBInstanceClassMemory/9531392}"
   }
 
   parameter {
@@ -276,7 +304,6 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
     },
     var.tags
   )
-
 }
 
 resource "aws_cloudwatch_log_group" "rds-cluster-log-group" {

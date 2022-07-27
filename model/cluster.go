@@ -15,7 +15,6 @@ type Cluster struct {
 	InstanceType          string
 	BackupRetentionPeriod string
 	DBEngine              string
-	MaxConnections        string
 	Replicas              string
 	DBProxy               bool
 }

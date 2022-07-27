@@ -18,7 +18,6 @@ type ProvisionClusterRequest struct {
 	InstanceType          string `json:"instanceType"`
 	BackupRetentionPeriod string `json:"backupRetentionPeriod"`
 	DBEngine              string `json:"dbEngine"`
-	MaxConnections        string `json:"maxConnections,omitempty"`
 	Replicas              string `json:"replicas"`
 	DBProxy               bool   `json:"dbProxy"`
 }
@@ -73,10 +72,6 @@ func (request *ProvisionClusterRequest) SetDefaults() {
 
 	if request.DBEngine == "" {
 		request.DBEngine = "postgres"
-	}
-
-	if request.MaxConnections == "" {
-		request.MaxConnections = "auto"
 	}
 
 	if request.Replicas == "" {

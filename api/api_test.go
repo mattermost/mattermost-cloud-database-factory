@@ -47,7 +47,6 @@ func TestProvisionCluster(t *testing.T) {
 			Apply:                 false,
 			BackupRetentionPeriod: "15",
 			DBEngine:              "postgres",
-			MaxConnections:        "150000",
 			Replicas:              "3",
 			DBProxy:               true,
 		})
@@ -63,7 +62,6 @@ func TestProvisionCluster(t *testing.T) {
 			Apply:                 false,
 			BackupRetentionPeriod: "15",
 			DBEngine:              "postgres",
-			MaxConnections:        "150000",
 			Replicas:              "3",
 			DBProxy:               true,
 		})
@@ -79,7 +77,6 @@ func TestProvisionCluster(t *testing.T) {
 			Apply:                 false,
 			BackupRetentionPeriod: "15",
 			DBEngine:              "postgres",
-			MaxConnections:        "150000",
 			Replicas:              "3",
 			DBProxy:               true,
 		})
@@ -96,7 +93,6 @@ func TestProvisionCluster(t *testing.T) {
 			InstanceType:          "test-type",
 			BackupRetentionPeriod: "16",
 			DBEngine:              "mysql",
-			MaxConnections:        "100000",
 			Replicas:              "2",
 			DBProxy:               false,
 		})
@@ -109,7 +105,6 @@ func TestProvisionCluster(t *testing.T) {
 		require.Equal(t, "test-type", cluster.InstanceType)
 		require.Equal(t, "16", cluster.BackupRetentionPeriod)
 		require.Equal(t, "mysql", cluster.DBEngine)
-		require.Equal(t, "100000", cluster.MaxConnections)
 		require.Equal(t, "2", cluster.Replicas)
 		require.Equal(t, false, cluster.DBProxy)
 	})

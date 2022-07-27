@@ -27,7 +27,6 @@ func init() {
 	clusterProvisionCmd.Flags().String("instance-type", "db.r5.large", "The instance type used for Aurora cluster replicas")
 	clusterProvisionCmd.Flags().String("backup-retention-period", "15", "The retention period for the DB instance backups")
 	clusterProvisionCmd.Flags().String("db-engine", "postgres", "The database engine. Can be mysql or postgres")
-	clusterProvisionCmd.Flags().String("max-connections", "auto", "The max connections allowed in the DB cluster. This is applicable only to PostgreSQL engine")
 	clusterProvisionCmd.Flags().String("replicas", "3", "The total number of write/read replicas.")
 	clusterProvisionCmd.Flags().Bool("dbproxy", true, "If enabled the multitenant DB cluster will be used with a DB proxy.")
 
@@ -62,7 +61,6 @@ var clusterProvisionCmd = &cobra.Command{
 		instanceType, _ := command.Flags().GetString("instance-type")
 		backupRetentionPeriod, _ := command.Flags().GetString("backup-retention-period")
 		dbEngine, _ := command.Flags().GetString("db-engine")
-		maxConnections, _ := command.Flags().GetString("max-connections")
 		replicas, _ := command.Flags().GetString("replicas")
 		dbProxy, _ := command.Flags().GetBool("dbproxy")
 
@@ -75,7 +73,6 @@ var clusterProvisionCmd = &cobra.Command{
 			InstanceType:          instanceType,
 			BackupRetentionPeriod: backupRetentionPeriod,
 			DBEngine:              dbEngine,
-			MaxConnections:        maxConnections,
 			Replicas:              replicas,
 			DBProxy:               dbProxy,
 		})

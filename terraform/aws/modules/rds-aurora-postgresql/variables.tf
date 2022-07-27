@@ -148,14 +148,6 @@ variable "replica_scale_out_cooldown" {
   description = "Cooldown in seconds before allowing further scaling operations after a scale out"
 }
 
-variable "max_postgresql_connections" {
-  type = string
-}
-
-variable "max_postgresql_connections_map" {
-  type = map(any)
-}
-
 variable "ram_memory_bytes" {
   type        = map(any)
   description = "The RAM memory of each instance type in Bytes. A change in this variable should be reflected in database factory vertical scaling main.go as well."

@@ -41,7 +41,6 @@ func sendMattermostNotification(cluster *model.Cluster, message string) error {
 			{Title: "BackupRetentionPeriod", Value: cluster.BackupRetentionPeriod, Short: true},
 			{Title: "ClusterID", Value: cluster.ClusterID, Short: true},
 			{Title: "DBEngine", Value: cluster.DBEngine, Short: true},
-			{Title: "MaxConnections", Value: cluster.MaxConnections, Short: true},
 			{Title: "Replicas", Value: cluster.Replicas, Short: true},
 		},
 	}
@@ -72,7 +71,6 @@ func sendMattermostErrorNotification(cluster *model.Cluster, errorMessage error,
 			{Title: "BackupRetentionPeriod", Value: cluster.BackupRetentionPeriod, Short: true},
 			{Title: "ClusterID", Value: cluster.ClusterID, Short: true},
 			{Title: "DBEngine", Value: cluster.DBEngine, Short: true},
-			{Title: "MaxConnections", Value: cluster.MaxConnections, Short: true},
 			{Title: "Replicas", Value: cluster.Replicas, Short: true},
 		},
 	}

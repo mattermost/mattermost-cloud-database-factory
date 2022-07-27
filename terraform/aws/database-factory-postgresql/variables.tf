@@ -179,41 +179,6 @@ variable "replica_scale_out_cooldown" {
   description = "Cooldown in seconds before allowing further scaling operations after a scale out"
 }
 
-variable "max_postgresql_connections" {
-  default = ""
-  type    = string
-}
-
-variable "max_postgresql_connections_map" {
-  default = {
-    "db.t3.small"    = "198"
-    "db.t3.medium"   = "415"
-    "db.t3.large"    = "683"
-    "db.t4g.small"   = "198"
-    "db.t4g.medium"  = "415"
-    "db.t4g.large"   = "683"
-    "db.r5.large"    = "1675"
-    "db.r5.xlarge"   = "3355"
-    "db.r5.2xlarge"  = "6710"
-    "db.r5.4xlarge"  = "13425"
-    "db.r5.8xlarge"  = "26855"
-    "db.r5.12xlarge" = "40285"
-    "db.r5.16xlarge" = "53715"
-    "db.r5.24xlarge" = "80575"
-    "db.r6g.16xlarge" = "57690"
-    "db.r6g.12xlarge" = "43260"
-    "db.r6g.8xlarge" = "28840"
-    "db.r6g.4xlarge" = "14420"
-    "db.r6g.2xlarge" = "6958"
-    "db.r6g.xlarge"  = "3479"
-    "db.r6g.large"   = "1722"
-    "db.t4g.large"   = "900"
-    "db.t4g.medium"   = "450"
-    "db.t4g.small"   = "225"
-  }
-  type = map(any)
-}
-
 variable "ram_memory_bytes" {
   default = {
     "db.t3.small"    = "2147483648"
@@ -256,7 +221,7 @@ variable "memory_cache_proportion" {
 }
 
 variable "connections_safety_percentage" {
-  default     = 0.90
+  default     = 0.85
   description = "Percentage of max connections that when reached should trigger vertical scaling."
   type        = number
 }

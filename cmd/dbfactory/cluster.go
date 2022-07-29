@@ -29,7 +29,7 @@ func init() {
 	clusterProvisionCmd.Flags().String("db-engine", "postgres", "The database engine. Can be mysql or postgres")
 	clusterProvisionCmd.Flags().String("replicas", "3", "The total number of write/read replicas.")
 	clusterProvisionCmd.Flags().Bool("dbproxy", true, "If enabled the multitenant DB cluster will be used with a DB proxy.")
-	clusterProvisionCmd.Flags().String("creation-snapshot-arn", "", "Optional: The ARN of the snapshot to use for the DB cluster")
+	clusterProvisionCmd.Flags().String("creation-snapshot-arn", "", "The ARN of the snapshot to use for the DB cluster (default \"\")")
 
 	clusterCmd.AddCommand(clusterProvisionCmd)
 

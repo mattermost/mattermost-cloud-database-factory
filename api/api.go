@@ -36,7 +36,6 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 //     "clusterID": "12345678",
 //     "backupRetentionPeriod": "15",
 //     "dbEngine: postgres",
-//     "maxConnections": "150000",
 //     "replicas": "3",
 //     "dbProxy": true,
 //     "creationSnapshotARN": "",

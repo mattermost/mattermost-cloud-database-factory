@@ -59,7 +59,6 @@ No modules.
 | <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | The instance type of the RDS instance | `string` | n/a | yes |
 | <a name="input_lambda_name"></a> [lambda\_name](#input\_lambda\_name) | Lambda which ships logs to opensearch | `string` | `"logs-to-opensearch"` | no |
 | <a name="input_max_postgresql_connections"></a> [max\_postgresql\_connections](#input\_max\_postgresql\_connections) | n/a | `string` | n/a | yes |
-| <a name="input_max_postgresql_connections_map"></a> [max\_postgresql\_connections\_map](#input\_max\_postgresql\_connections\_map) | n/a | `map(any)` | n/a | yes |
 | <a name="input_memory_alarm_limit"></a> [memory\_alarm\_limit](#input\_memory\_alarm\_limit) | Limit to trigger memory alarm. Number in Bytes (100MB) | `string` | n/a | yes |
 | <a name="input_memory_cache_proportion"></a> [memory\_cache\_proportion](#input\_memory\_cache\_proportion) | Proportion of memory that is used for cache. By default it is 75%. A change in this variable should be reflected in database factory vertical scaling main.go as well. | `number` | n/a | yes |
 | <a name="input_monitoring_interval"></a> [monitoring\_interval](#input\_monitoring\_interval) | The interval, in seconds, between points when Enhanced Monitoring metrics are collected for the DB instance | `number` | n/a | yes |

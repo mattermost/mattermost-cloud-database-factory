@@ -49,7 +49,6 @@ module "rds_setup" {
   creation_snapshot_arn            = var.creation_snapshot_arn
 
   # Added for compatibility
-  max_postgresql_connections = var.max_postgresql_connections
 
   tags = {
     Owner       = "cloud-team"

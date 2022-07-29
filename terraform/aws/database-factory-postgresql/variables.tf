@@ -179,34 +179,6 @@ variable "replica_scale_out_cooldown" {
   description = "Cooldown in seconds before allowing further scaling operations after a scale out"
 }
 
-variable "max_postgresql_connections" {
-  default = ""
-  type    = string
-}
-
-variable "max_postgresql_connections_map" {
-  default = {
-    "db.t3.small"    = "198"
-    "db.t3.medium"   = "415"
-    "db.t3.large"    = "683"
-    "db.t4g.small"   = "198"
-    "db.t4g.medium"  = "415"
-    "db.t4g.large"   = "683"
-    "db.r5.large"    = "1675"
-    "db.r5.xlarge"   = "3355"
-    "db.r5.2xlarge"  = "6710"
-    "db.r5.4xlarge"  = "13425"
-    "db.r5.8xlarge"  = "26855"
-    "db.r5.12xlarge" = "40285"
-    "db.r5.16xlarge" = "53715"
-    "db.r5.24xlarge" = "80575"
-    "db.r6g.2xlarge" = "6958"
-    "db.r6g.xlarge"  = "3479"
-    "db.r6g.large"   = "1722"
-  }
-  type = map(any)
-}
-
 variable "ram_memory_bytes" {
   default = {
     "db.t3.small"    = "2147483648"
@@ -226,6 +198,11 @@ variable "ram_memory_bytes" {
     "db.r6g.large"   = "17179869184"
     "db.r6g.xlarge"  = "34359738368"
     "db.r6g.2xlarge" = "68719476736"
+    "db.r6g.4xlarge" = "137438953472"
+    "db.r6g.8xlarge" = "274877906944"
+    "db.r6g.12xlarge" = "412316860416"
+    "db.r6g.16xlarge" = "549755813888"
+    "db.r6g.24xlarge" = "824633720832"
   }
   type        = map(any)
   description = "The RAM memory of each instance type in Bytes. A change in this variable should be reflected in database factory vertical scaling main.go as well."
@@ -240,6 +217,12 @@ variable "memory_alarm_limit" {
 variable "memory_cache_proportion" {
   default     = 0.75
   description = "Proportion of memory that is used for cache. By default it is 75%. A change in this variable should be reflected in database factory vertical scaling main.go as well."
+  type        = number
+}
+
+variable "connections_safety_percentage" {
+  default     = 0.85
+  description = "Percentage of max connections that when reached should trigger vertical scaling."
   type        = number
 }
 

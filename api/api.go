@@ -58,7 +58,6 @@ func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request
 		InstanceType:          provisionClusterRequest.InstanceType,
 		BackupRetentionPeriod: provisionClusterRequest.BackupRetentionPeriod,
 		DBEngine:              provisionClusterRequest.DBEngine,
-		MaxConnections:        provisionClusterRequest.MaxConnections,
 		Replicas:              provisionClusterRequest.Replicas,
 		DBProxy:               provisionClusterRequest.DBProxy,
 		CreationSnapshotARN:   provisionClusterRequest.CreationSnapshotARN,

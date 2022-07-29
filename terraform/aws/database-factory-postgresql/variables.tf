@@ -278,3 +278,8 @@ variable "cwl_endpoint" {
   type        = string
 }
 
+variable "creation_snapshot_arn" {
+  type        = string
+  description = "The ARN of the snapshot to create from"
+  default     = ""
+}

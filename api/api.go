@@ -36,9 +36,10 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 //     "clusterID": "12345678",
 //     "backupRetentionPeriod": "15",
 //     "dbEngine: postgres",
-//     "maxConnections": "150000"
-//     "replicas": "3"
-//     "dbProxy": true
+//     "maxConnections": "150000",
+//     "replicas": "3",
+//     "dbProxy": true,
+//     "creationSnapshotARN": "",
 // }
 func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
 	provisionClusterRequest, err := model.NewProvisionClusterRequestFromReader(r.Body)
@@ -60,6 +61,7 @@ func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request
 		MaxConnections:        provisionClusterRequest.MaxConnections,
 		Replicas:              provisionClusterRequest.Replicas,
 		DBProxy:               provisionClusterRequest.DBProxy,
+		CreationSnapshotARN:   provisionClusterRequest.CreationSnapshotARN,
 	}
 
 	go dbfactory.InitProvisionCluster(&cluster)

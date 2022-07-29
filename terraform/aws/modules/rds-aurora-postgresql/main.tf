@@ -59,6 +59,7 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.cluster_parameter_group_postgresql.id
   copy_tags_to_snapshot           = var.copy_tags_to_snapshot
   enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
+  snapshot_identifier             = var.creation_snapshot_arn == "" ? null : var.creation_snapshot_arn
 
   tags = merge(
     {

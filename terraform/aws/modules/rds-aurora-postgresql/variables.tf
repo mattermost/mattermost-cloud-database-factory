@@ -195,3 +195,9 @@ variable "multitenant_tag" {
   type        = string
   description = "The tag that will be applied and identify the type of multitenant DB cluster(multitenant-rds-dbproxy or multitenant-rds)."
 }
+
+variable "creation_snapshot_arn" {
+  type        = string
+  description = "The ARN of the snapshot to create from"
+  default     = ""
+}

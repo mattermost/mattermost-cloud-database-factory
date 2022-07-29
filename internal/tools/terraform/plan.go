@@ -62,6 +62,7 @@ func (c *Cmd) Plan(cluster *model.Cluster) error {
 		arg("var", fmt.Sprintf("max_postgresql_connections=%s", cluster.MaxConnections)),
 		arg("var", fmt.Sprintf("replica_min=%d", replicas)),
 		arg("var", fmt.Sprintf("multitenant_tag=%s", multitenantTag)),
+		arg("var", fmt.Sprintf("creation_snapshot_arn=%s", cluster.CreationSnapshotARN)),
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to invoke terraform plan")
@@ -94,6 +95,7 @@ func (c *Cmd) Apply(cluster *model.Cluster) error {
 		arg("var", fmt.Sprintf("max_postgresql_connections=%s", cluster.MaxConnections)),
 		arg("var", fmt.Sprintf("replica_min=%d", replicas)),
 		arg("var", fmt.Sprintf("multitenant_tag=%s", multitenantTag)),
+		arg("var", fmt.Sprintf("creation_snapshot_arn=%s", cluster.CreationSnapshotARN)),
 		arg("auto-approve"),
 	)
 	if err != nil {

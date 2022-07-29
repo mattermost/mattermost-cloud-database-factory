@@ -149,3 +149,9 @@ variable "replica_scale_out_cooldown" {
 }
 
 variable "max_postgresql_connections" {}
+
+variable "creation_snapshot_arn" {
+  type        = string
+  description = "The ARN of the snapshot to create from"
+  default     = ""
+}

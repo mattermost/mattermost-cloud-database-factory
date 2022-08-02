@@ -147,3 +147,14 @@ variable "replica_scale_out_cooldown" {
   type        = number
   description = "Cooldown in seconds before allowing further scaling operations after a scale out"
 }
+
+variable "creation_snapshot_arn" {
+  type        = string
+  description = "The ARN of the snapshot to create from"
+  default     = ""
+}
+
+variable "multitenant_tag" {
+  type        = string
+  description = "The tag that will be applied and identify the type of multitenant DB cluster(multitenant-rds-dbproxy or multitenant-rds)."
+}

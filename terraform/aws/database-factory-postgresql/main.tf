@@ -54,7 +54,9 @@ module "rds_setup" {
   tcp_keepalives_interval          = var.tcp_keepalives_interval
   random_page_cost                 = var.random_page_cost
   multitenant_tag                  = var.multitenant_tag
+  creation_snapshot_arn            = var.creation_snapshot_arn
   connections_safety_percentage    = var.connections_safety_percentage
+  creation_snapshot_arn            = var.creation_snapshot_arn
 
   tags = {
     Owner       = "cloud-team"

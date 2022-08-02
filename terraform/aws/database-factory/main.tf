@@ -46,6 +46,9 @@ module "rds_setup" {
   replica_scale_connections        = var.replica_scale_connections
   replica_scale_in_cooldown        = var.replica_scale_in_cooldown
   replica_scale_out_cooldown       = var.replica_scale_out_cooldown
+  creation_snapshot_arn            = var.creation_snapshot_arn
+  multitenant_tag                  = var.multitenant_tag
+
   # Added for compatibility
 
   tags = {

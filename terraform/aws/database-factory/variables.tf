@@ -29,7 +29,7 @@ variable "engine" {
 }
 
 variable "engine_version" {
-  default     = "5.7.12"
+  default     = "5.7.mysql_aurora.2.10.0"
   description = "The engine version to use"
   type        = string
 }
@@ -170,4 +170,16 @@ variable "replica_scale_out_cooldown" {
   default     = 300
   type        = number
   description = "Cooldown in seconds before allowing further scaling operations after a scale out"
+}
+
+variable "creation_snapshot_arn" {
+  type        = string
+  description = "The ARN of the snapshot to create from"
+  default     = ""
+}
+
+variable "multitenant_tag" {
+  default     = ""
+  type        = string
+  description = "The tag that will be applied and identify the type of multitenant DB cluster(multitenant-rds-dbproxy or multitenant-rds)."
 }

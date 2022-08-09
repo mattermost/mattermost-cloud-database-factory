@@ -56,7 +56,6 @@ module "rds_setup" {
   multitenant_tag                  = var.multitenant_tag
   creation_snapshot_arn            = var.creation_snapshot_arn
   connections_safety_percentage    = var.connections_safety_percentage
-  creation_snapshot_arn            = var.creation_snapshot_arn
 
   tags = {
     Owner       = "cloud-team"

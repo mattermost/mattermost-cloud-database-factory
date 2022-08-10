@@ -95,7 +95,7 @@ jobs:
       - run:
           command: |
             sudo apt update && sudo apt install hub git
-            GO111MODULE=on go get k8s.io/release/cmd/release-notes
+            GO111MODULE=on go install k8s.io/release/cmd/release-notes@latest
             make release
 workflows:
   version: 2

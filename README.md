@@ -11,10 +11,13 @@ For the configuration Terraform templates and modules are being used, preconfigu
 1. Install [Go](https://golang.org/doc/install)
 2. Install [Terraform](https://learn.hashicorp.com/terraform/getting-started/install.html) version v0.14.5
 3. Specify the region in your AWS config, e.g. `~/.aws/config`:
-```
-[profile mm-cloud]
-region = us-east-1
-```
+  ```
+  [profile mm-cloud]
+  region = us-east-1
+  ```
+
+  and/or using the `AWS_DEFAULT_REGION` environment variable.
+
 4. Generate an AWS Access and Secret key pair, then export them in your bash profile:
   ```
   export AWS_ACCESS_KEY_ID=YOURACCESSKEYID

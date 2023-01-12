@@ -99,9 +99,8 @@ resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
       "DatabaseType"                        = var.multitenant_tag,
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
     },
-    var.tags
-  )
-
+    var.tags,
+    [var.enable_devops_guru ? {"devops-guru-default" = aws_rds_cluster.provisioning_rds_cluster.cluster_identifier} : null]...)
   lifecycle {
     ignore_changes = [
       instance_class,

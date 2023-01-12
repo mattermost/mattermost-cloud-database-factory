@@ -18,6 +18,7 @@ type Cluster struct {
 	Replicas              string
 	DBProxy               bool
 	CreationSnapshotARN   string
+	EnableDevopsGuru      bool
 }
 
 // ClusterFromReader decodes a json-encoded cluster from the given io.Reader.

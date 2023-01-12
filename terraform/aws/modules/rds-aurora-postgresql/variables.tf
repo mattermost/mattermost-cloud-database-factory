@@ -198,3 +198,8 @@ variable "creation_snapshot_arn" {
   description = "The ARN of the snapshot to create from"
   default     = ""
 }
+
+variable "enable_devops_guru" {
+  type        = bool
+  description = "Set it to true will enable AWS Devops Guru service for DB instances within the cluster."
+}

@@ -30,7 +30,7 @@ func init() {
 	clusterProvisionCmd.Flags().String("replicas", "3", "The total number of write/read replicas.")
 	clusterProvisionCmd.Flags().Bool("dbproxy", true, "If enabled the multitenant DB cluster will be used with a DB proxy.")
 	clusterProvisionCmd.Flags().String("creation-snapshot-arn", "", "The ARN of the snapshot to use for the DB cluster (default \"\")")
-	clusterProvisionCmd.Flags().Bool("devopsguru", false, "Enable the AWS service Devops Guru to all database instances within a cluster.")
+	clusterProvisionCmd.Flags().Bool("devops-guru", false, "Enable the AWS service Devops Guru to all database instances within a cluster.")
 
 	clusterCmd.AddCommand(clusterProvisionCmd)
 
@@ -66,7 +66,7 @@ var clusterProvisionCmd = &cobra.Command{
 		replicas, _ := command.Flags().GetString("replicas")
 		dbProxy, _ := command.Flags().GetBool("dbproxy")
 		creationSnapshotARN, _ := command.Flags().GetString("creation-snapshot-arn")
-		enableDevopsGuru, _ := command.Flags().GetBool("devopsguru")
+		enableDevopsGuru, _ := command.Flags().GetBool("devops-guru")
 
 		cluster, err := client.ProvisionCluster(&model.ProvisionClusterRequest{
 			VPCID:                 vpcID,

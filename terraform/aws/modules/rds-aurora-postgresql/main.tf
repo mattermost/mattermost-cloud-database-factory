@@ -100,12 +100,36 @@ resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
     },
     var.tags,
-    [var.enable_devops_guru ? {"devops-guru-default" = aws_rds_cluster.provisioning_rds_cluster.cluster_identifier} : null]...)
+    [var.enable_devops_guru ? {"devops-guru-default" = "${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}"} : null]...)
   lifecycle {
     ignore_changes = [
       instance_class,
     ]
   }
+}
+
+# resource "null_resource" "enable_devops_guru" {
+#   count = var.enable_devops_guru == true ? var.replica_min : 0
+#   provisioner "local-exec" {
+#     command = <<-EOF
+#       aws devops-guru update-resource-collection --action ADD --resource-collection '{"Tags": [{"AppBoundaryKey": "devops-guru-default", "TagValues": ["${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}"]}]}'
+# EOF
+#   }
+#   depends_on = [
+#     aws_rds_cluster_instance.provisioning_rds_db_instance
+#   ]
+# }
+
+resource "null_resource" "enable_devops_guru" {
+  count =  var.replica_min
+  provisioner "local-exec" {
+    command = <<-EOF
+      aws devops-guru update-resource-collection --action ${var.enable_devops_guru == true ? "ADD" : "REMOVE"} --resource-collection '{"Tags": [{"AppBoundaryKey": "devops-guru-default", "TagValues": ["${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}"]}]}'
+EOF
+  }
+  depends_on = [
+    aws_rds_cluster_instance.provisioning_rds_db_instance
+  ]
 }
 
 resource "random_string" "db_cluster_identifier" {

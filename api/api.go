@@ -40,6 +40,7 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 //		  "replicas": "3",
 //		  "dbProxy": true,
 //		  "creationSnapshotARN": "",
+//		  "enableDevopsGuru": false
 //	}
 func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
 	provisionClusterRequest, err := model.NewProvisionClusterRequestFromReader(r.Body)

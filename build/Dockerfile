@@ -25,7 +25,15 @@ ENV CLOUD=/mattermost-cloud-database-factory/dbfactory \
     USER_UID=10001 \
     USER_NAME=cloud
 
-RUN  apk update && apk add libc6-compat && apk add ca-certificates
+RUN  apk update  \
+     && apk add --no-cache \
+            libc6-compat \
+            ca-certificates \
+            python3 \
+            py3-pip \
+     && pip3 install --upgrade pip \
+     && pip3 install awscli --upgrade --user --no-cache-dir \
+     && rm -rf /var/cache/apk/*
 COPY --from=build /mattermost-cloud-database-factory/build/terraform /usr/local/bin/
 COPY --from=build /mattermost-cloud-database-factory/build/_output/bin/dbfactory /mattermost-cloud-database-factory/dbfactory
 COPY --from=build /mattermost-cloud-database-factory/build/bin /usr/local/bin

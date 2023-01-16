@@ -32,7 +32,7 @@ RUN  apk update  \
             python3 \
             py3-pip \
      && pip3 install --upgrade pip \
-     && pip3 install awscli --upgrade --user --no-cache-dir \
+     && pip3 install --no-cache-dir awscli \
      && rm -rf /var/cache/apk/*
 COPY --from=build /mattermost-cloud-database-factory/build/terraform /usr/local/bin/
 COPY --from=build /mattermost-cloud-database-factory/build/_output/bin/dbfactory /mattermost-cloud-database-factory/dbfactory

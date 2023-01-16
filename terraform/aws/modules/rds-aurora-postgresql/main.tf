@@ -108,28 +108,28 @@ resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
   }
 }
 
-# resource "null_resource" "enable_devops_guru" {
-#   count = var.enable_devops_guru == true ? var.replica_min : 0
-#   provisioner "local-exec" {
-#     command = <<-EOF
-#       aws devops-guru update-resource-collection --action ADD --resource-collection '{"Tags": [{"AppBoundaryKey": "devops-guru-default", "TagValues": ["${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}"]}]}'
-# EOF
-#   }
-#   depends_on = [
-#     aws_rds_cluster_instance.provisioning_rds_db_instance
-#   ]
-# }
-
+/*
+sleep 3 is a waiting time between tag Add/Remove and Devops Guru enable/disable.
+This command will always run and "|| true will prevent it to broke when enabled_devops_guru is false and there's nothing to disable
+The local exec is a temporary solution until terraform supports devops-guru https://github.com/hashicorp/terraform-provider-aws/issues/17919
+*/
 resource "null_resource" "enable_devops_guru" {
   count =  var.replica_min
   provisioner "local-exec" {
     command = <<-EOF
-      aws devops-guru update-resource-collection --action ${var.enable_devops_guru == true ? "ADD" : "REMOVE"} --resource-collection '{"Tags": [{"AppBoundaryKey": "devops-guru-default", "TagValues": ["${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}"]}]}'
+      sleep 3 \
+      && aws devops-guru update-resource-collection \
+      --action ${var.enable_devops_guru == true ? "ADD" : "REMOVE"} \
+      --resource-collection '{"Tags": [{"AppBoundaryKey": "devops-guru-default", "TagValues": ["${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}"]}]}' \
+      || true
 EOF
   }
   depends_on = [
     aws_rds_cluster_instance.provisioning_rds_db_instance
   ]
+  triggers = {
+    enable_devops_guru = var.enable_devops_guru
+  }
 }
 
 resource "random_string" "db_cluster_identifier" {

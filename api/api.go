@@ -27,19 +27,21 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 
 // handleProvisionDBCluster responds to POST /api/provision, beginning the process of creating a new RDS Aurora cluster.
 // sample body:
-// {
-//     "vpcID": "vpc-12345678",
-//     "environment": "dev",
-//     "stateStore": "terraform-database-factory-state-bucket-dev",
-//     "apply": true,
-//     "instanceType": "db.r5.large",
-//     "clusterID": "12345678",
-//     "backupRetentionPeriod": "15",
-//     "dbEngine: postgres",
-//     "replicas": "3",
-//     "dbProxy": true,
-//     "creationSnapshotARN": "",
-// }
+//
+//	{
+//		  "vpcID": "vpc-12345678",
+//		  "environment": "dev",
+//		  "stateStore": "terraform-database-factory-state-bucket-dev",
+//		  "apply": true,
+//		  "instanceType": "db.r5.large",
+//		  "clusterID": "12345678",
+//		  "backupRetentionPeriod": "15",
+//		  "dbEngine: postgres",
+//		  "replicas": "3",
+//		  "dbProxy": true,
+//		  "creationSnapshotARN": "",
+//		  "enableDevopsGuru": false
+//	}
 func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
 	provisionClusterRequest, err := model.NewProvisionClusterRequestFromReader(r.Body)
 	if err != nil {
@@ -60,6 +62,7 @@ func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request
 		Replicas:              provisionClusterRequest.Replicas,
 		DBProxy:               provisionClusterRequest.DBProxy,
 		CreationSnapshotARN:   provisionClusterRequest.CreationSnapshotARN,
+		EnableDevopsGuru:      provisionClusterRequest.EnableDevopsGuru,
 	}
 
 	go dbfactory.InitProvisionCluster(&cluster)

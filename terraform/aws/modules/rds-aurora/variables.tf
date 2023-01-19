@@ -83,11 +83,6 @@ variable "copy_tags_to_snapshot" {
   type        = bool
 }
 
-variable "enabled_cloudwatch_logs_exports" {
-  description = "Set of log types to enable for exporting to CloudWatch logs"
-  type        = list(string)
-}
-
 variable "tags" {
   description = "A map of tags to assign to the resource"
   type        = map(any)

@@ -99,12 +99,6 @@ variable "copy_tags_to_snapshot" {
   type        = bool
 }
 
-variable "enabled_cloudwatch_logs_exports" {
-  default     = ["postgresql"]
-  description = "Set of log types to enable for exporting to CloudWatch logs"
-  type        = list(string)
-}
-
 variable "instance_type" {
   default     = ""
   description = "The instance type of the RDS instance"
@@ -253,11 +247,6 @@ variable "tcp_keepalives_interval" {
 variable "lambda_name" {
   default     = "logs-to-opensearch"
   description = "Lambda which ships logs to opensearch"
-  type        = string
-}
-variable "cwl_endpoint" {
-  default     = "logs.us-east-1.amazonaws.com"
-  description = "Cloudwatch Logs endpoint"
   type        = string
 }
 

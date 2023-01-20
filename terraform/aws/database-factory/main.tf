@@ -34,7 +34,6 @@ module "rds_setup" {
   storage_encrypted                = var.storage_encrypted
   apply_immediately                = var.apply_immediately
   copy_tags_to_snapshot            = var.copy_tags_to_snapshot
-  enabled_cloudwatch_logs_exports  = var.enabled_cloudwatch_logs_exports
   instance_type                    = var.instance_type
   monitoring_interval              = var.monitoring_interval
   performance_insights_enabled     = var.performance_insights_enabled

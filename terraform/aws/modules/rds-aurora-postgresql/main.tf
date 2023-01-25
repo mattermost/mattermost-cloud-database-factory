@@ -99,7 +99,7 @@ resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
     },
     var.tags,
-    [var.enable_devops_guru ? {"devops-guru-default" = "${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}"} : null]...)
+    [var.enable_devops_guru ? {"devops-guru-default" = replace("${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}", "/rds-cluster/", "rds-db-instance")} : null]...)
   lifecycle {
     ignore_changes = [
       instance_class,
@@ -207,6 +207,11 @@ resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
     value = var.tcp_keepalives_interval
   }
 
+  parameter {
+    name  = "log_min_duration_statement"
+    value = var.environment == "prod" ? 2000 : var.log_min_duration_statement
+  }
+
   tags = merge(
     {
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
@@ -245,6 +250,11 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
   parameter {
     name  = "tcp_keepalives_interval"
     value = var.tcp_keepalives_interval
+  }
+
+    parameter {
+    name  = "log_min_duration_statement"
+    value = var.environment == "prod" ? 2000 : var.log_min_duration_statement
   }
 
   tags = merge(

@@ -261,3 +261,9 @@ variable "enable_devops_guru" {
   type        = string
   description = "Set it to true will enable AWS Devops Guru service for DB instances within the cluster."
 }
+
+variable "log_min_duration_statement" {
+  default     = -1
+  type        = number
+  description = "The duration of each completed statement to be logged."
+}

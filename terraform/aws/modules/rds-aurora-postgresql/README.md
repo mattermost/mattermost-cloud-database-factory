@@ -56,6 +56,7 @@ No modules.
 | <a name="input_environment"></a> [environment](#input\_environment) | The name of the environment which will deploy to and will be added as a tag | `string` | n/a | yes |
 | <a name="input_final_snapshot_identifier_prefix"></a> [final\_snapshot\_identifier\_prefix](#input\_final\_snapshot\_identifier\_prefix) | The prefix name of your final DB snapshot when this DB instance is deleted | `string` | n/a | yes |
 | <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | The instance type of the RDS instance | `string` | n/a | yes |
+| <a name="input_log_min_duration_statement"></a> [log\_min\_duration\_statement](#input\_log\_min\_duration\_statement) | The duration of each completed statement to be logged. | `number` | n/a | yes |
 | <a name="input_memory_alarm_limit"></a> [memory\_alarm\_limit](#input\_memory\_alarm\_limit) | Limit to trigger memory alarm. Number in Bytes (100MB) | `string` | n/a | yes |
 | <a name="input_memory_cache_proportion"></a> [memory\_cache\_proportion](#input\_memory\_cache\_proportion) | Proportion of memory that is used for cache. By default it is 75%. A change in this variable should be reflected in database factory vertical scaling main.go as well. | `number` | n/a | yes |
 | <a name="input_monitoring_interval"></a> [monitoring\_interval](#input\_monitoring\_interval) | The interval, in seconds, between points when Enhanced Monitoring metrics are collected for the DB instance | `number` | n/a | yes |

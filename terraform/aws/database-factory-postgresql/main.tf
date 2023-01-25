@@ -56,7 +56,7 @@ module "rds_setup" {
   creation_snapshot_arn            = var.creation_snapshot_arn
   connections_safety_percentage    = var.connections_safety_percentage
   enable_devops_guru               = var.enable_devops_guru
-
+  log_min_duration_statement       = var.log_min_duration_statement
   tags = {
     Owner       = "cloud-team"
     Terraform   = "true"

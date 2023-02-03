@@ -3,8 +3,8 @@
 ################################################################################
 
 ## Docker Build Versions
-DOCKER_BUILD_IMAGE = golang:1.17
-DOCKER_BASE_IMAGE = alpine:3.14
+DOCKER_BUILD_IMAGE = golang:1.19
+DOCKER_BASE_IMAGE = alpine:3.17
 
 ## Tool Versions
 TERRAFORM_VERSION=1.1.8
@@ -17,14 +17,29 @@ MACHINE = $(shell uname -m)
 GOFLAGS ?= $(GOFLAGS:)
 BUILD_TIME := $(shell date -u +%Y%m%d.%H%M%S)
 BUILD_HASH := $(shell git rev-parse HEAD)
+PACKAGES=$(shell go list ./... | grep -v internal/mocks)
 
 ################################################################################
 
-LOGRUS_URL := github.com/sirupsen/logrus
+#LOGRUS_URL := github.com/sirupsen/logrus
+#
+#LOGRUS_VERSION := $(shell find go.mod -type f -exec cat {} + | grep ${LOGRUS_URL} | awk '{print $$NF}')
+#
+#LOGRUS_PATH := $(GOPATH)/pkg/mod/${LOGRUS_URL}\@${LOGRUS_VERSION}
+TOOLS_BIN_DIR := $(abspath bin)
+GO_INSTALL = ./scripts/go_install.sh
 
-LOGRUS_VERSION := $(shell find go.mod -type f -exec cat {} + | grep ${LOGRUS_URL} | awk '{print $$NF}')
+MOCKGEN_VER := v1.4.3
+MOCKGEN_BIN := mockgen
+MOCKGEN := $(TOOLS_BIN_DIR)/$(MOCKGEN_BIN)-$(MOCKGEN_VER)
 
-LOGRUS_PATH := $(GOPATH)/pkg/mod/${LOGRUS_URL}\@${LOGRUS_VERSION}
+OUTDATED_VER := master
+OUTDATED_BIN := go-mod-outdated
+OUTDATED_GEN := $(TOOLS_BIN_DIR)/$(OUTDATED_BIN)
+
+GOLANGCILINT_VER := v1.50.1
+GOLANGCILINT_BIN := golangci-lint
+GOLANGCILINT := $(TOOLS_BIN_DIR)/$(GOLANGCILINT_BIN)
 
 export GO111MODULE=on
 
@@ -33,16 +48,58 @@ all: check-style dist
 
 ## Runs govet and gofmt against all packages.
 .PHONY: check-style
-check-style: govet lint
+check-style: govet lint tflint goformat
 	@echo Checking for style guide compliance
 
 ## Runs lint against all packages.
 .PHONY: lint
-lint:
-	@echo Running lint
-	env GO111MODULE=off $(GO) get -u golang.org/x/lint/golint
-	golint -set_exit_status ./...
-	@echo lint success
+lint: $(GOLANGCILINT)
+	@echo Running golangci-lint
+	$(GOLANGCILINT) run
+
+## Runs lint against all packages for changes only
+.PHONY: lint-changes
+lint-changes: $(GOLANGCILINT)
+	@echo Running golangci-lint over changes only
+	$(GOLANGCILINT) run -n
+
+.PHONY: tflint
+tflint: setup-tflint plugin-tflint terraform-lint
+
+## setup: install tflint
+.PHONY: setup-tflint
+setup-tflint:
+	curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+
+.PHONY: plugin-tflint
+## installing aws plugin for tflint
+plugin-tflint:
+	tflint --init --config .tflint.hcl
+
+.PHONY: terraform-lint
+terraform-lint:
+	@echo "Linting all modules"
+	bash -c "./scripts/terraform_lint.sh"
+
+## Checks if files are formatted with go fmt.
+.PHONY: goformat
+goformat:
+	@echo Checking if code is formatted
+	@for package in $(PACKAGES); do \
+		echo "Checking "$$package; \
+		files=$$(go list -f '{{range .GoFiles}}{{$$.Dir}}/{{.}} {{end}}' $$package); \
+		if [ "$$files" ]; then \
+			gofmt_output=$$(gofmt -d -s $$files 2>&1); \
+			if [ "$$gofmt_output" ]; then \
+				echo "$$gofmt_output"; \
+				echo "gofmt failed"; \
+				echo "To fix it, run:"; \
+				echo "go fmt [FAILED_PACKAGE]"; \
+				exit 1; \
+			fi; \
+		fi; \
+	done
+	@echo "gofmt success"; \
 
 ## Runs govet against all packages.
 .PHONY: vet
@@ -55,39 +112,83 @@ govet:
 .PHONY: dist
 dist:	build
 
+.PHONY: binaries
+binaries:
+	@echo Building binaries of Mattermost-Cloud-Database-Factory
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/dbfactory-linux-amd64  ./cmd/$(APP)
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/dbfactory-darwin-amd64  ./cmd/$(APP)
+	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/dbfactory-linux-arm64 ./cmd/$(APP)
+	GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/dbfactory-darwin-arm64  ./cmd/$(APP)
+
 .PHONY: build
 build: ## Build the mattermost-cloud-database-factory
 	@echo Building Mattermost-Cloud-Database-Factory
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/dbfactory  ./cmd/dbfactory
 
+.PHONY: build-image
 build-image:  ## Build the docker image for mattermost-cloud-database-factory
 	@echo Building Mattermost-cloud-database-factory Docker Image
-	docker build \
+	docker buildx build \
+    --platform linux/arm64,linux/amd64 \
 	--build-arg DOCKER_BUILD_IMAGE=$(DOCKER_BUILD_IMAGE) \
 	--build-arg DOCKER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
 	. -f build/Dockerfile -t $(MATTERMOST_CLOUD_DATABASE_FACTORY_IMAGE) \
-	--no-cache
+	--no-cache \
+	--push
 
+.PHONY: build-image-with-tag
+build-image-with-tag:  ## Build the docker image for mattermost-cloud-database-factory
+	@echo Building Mattermost-cloud-database-factory Docker Image
+	docker buildx build \
+    --platform linux/arm64,linux/amd64 \
+	--build-arg DOCKER_BUILD_IMAGE=$(DOCKER_BUILD_IMAGE) \
+	--build-arg DOCKER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
+	. -f build/Dockerfile -t $(MATTERMOST_CLOUD_DATABASE_FACTORY_IMAGE):${TAG} \
+	--no-cache \
+	--push
+
+.PHONY: get-terraform
 get-terraform: ## Download terraform only if it's not available. Used in the docker build
 	@if [ ! -f build/terraform ]; then \
 		curl -Lo build/terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && cd build && unzip terraform.zip &&\
 		chmod +x terraform && rm terraform.zip;\
 	fi
 
+.PHONY: push-image-pr
+push-image-pr:
+	@echo Push Image PR
+	./scripts/push-image-pr.sh
+
+.PHONY: push-image
+push-image:
+	@echo Push Image
+	./scripts/push-image.sh
+
 .PHONY: install
 install: build
 	go install ./...
 
+.PHONY: check-modules
+check-modules: $(OUTDATED_GEN) ## Check outdated modules
+	@echo Checking outdated modules
+	$(GO) list -u -m -json all | $(OUTDATED_GEN) -update -direct
+
+.PHONY: update-modules
+update-modules: $(OUTDATED_GEN) ## Check outdated modules
+	@echo Update modules
+	$(GO) get -u ./...
+	$(GO) mod tidy
+
 # Generate mocks from the interfaces.
 .PHONY: mocks
-mocks:
-	@if [ ! -f $(GOPATH)/pkg/mod ]; then \
-		$(GO) mod download;\
-	fi
+mocks: $(MOCKGEN)
+	go generate ./internal/mocks/...
 
-	# Mockgen cannot generate mocks for logrus when reading it from modules.
-	GO111MODULE=off $(GO) get github.com/sirupsen/logrus
-	$(GOPATH)/bin/mockgen -source $(GOPATH)/src/github.com/sirupsen/logrus/logrus.go -package mocks -destination ./internal/mocks/logger/logrus.go
+.PHONY: verify-mocks
+verify-mocks:  $(MOCKGEN) mocks
+	@if !(git diff --quiet HEAD); then \
+		echo "generated files are out of date, run make mocks"; exit 1; \
+	fi
 
 # Installs necessary tools for testing
 .PHONY: setup-test
@@ -112,3 +213,16 @@ release:
 notify:
 	@echo Notify a release publish
 	sh ./scripts/notify.sh
+
+## --------------------------------------
+## Tooling Binaries
+## --------------------------------------
+
+$(MOCKGEN): ## Build mockgen.
+	GOBIN=$(TOOLS_BIN_DIR) $(GO_INSTALL) github.com/golang/mock/mockgen $(MOCKGEN_BIN) $(MOCKGEN_VER)
+
+$(OUTDATED_GEN): ## Build go-mod-outdated.
+	GOBIN=$(TOOLS_BIN_DIR) $(GO_INSTALL) github.com/psampaz/go-mod-outdated $(OUTDATED_BIN) $(OUTDATED_VER)
+
+$(GOLANGCILINT): ## Build golangci-lint
+	GOBIN=$(TOOLS_BIN_DIR) $(GO_INSTALL) github.com/golangci/golangci-lint/cmd/golangci-lint $(GOLANGCILINT_BIN) $(GOLANGCILINT_VER)

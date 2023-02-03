@@ -1,13 +1,20 @@
-data "aws_caller_identity" "current" {}
-
-data "aws_region" "current" {}
+terraform {
+  required_version = ">= 0.14.5"
+  backend "s3" {
+    region = "us-east-1"
+  }
+  required_providers {
+    aws    = "~> 3.17.0"
+    random = "~> 3.4.3"
+    null   = "~> 3.2.1"
+  }
+}
 
 locals {
   master_password              = var.password == "" ? random_password.master_password.result : var.password
   database_id                  = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
-  max_connections              = var.ram_memory_bytes[var.instance_type]/9531392
+  max_connections              = var.ram_memory_bytes[var.instance_type] / 9531392
   performance_insights_enabled = var.environment == "prod" ? var.performance_insights_enabled : false
-  account_details              = join(":", [data.aws_region.current.name, data.aws_caller_identity.current.account_id])
 }
 
 # Random string to use as master password unless one is specified
@@ -62,10 +69,10 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
 
   tags = merge(
     {
-      "Counter"               = 0,
-      "MultitenantDatabaseID" = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
-      "VpcID"                 = var.vpc_id,
-      "DatabaseType"          = var.multitenant_tag,
+      "Counter"                             = 0,
+      "MultitenantDatabaseID"               = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
+      "VpcID"                               = var.vpc_id,
+      "DatabaseType"                        = var.multitenant_tag,
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
     },
     var.tags
@@ -99,7 +106,7 @@ resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
     },
     var.tags,
-    [var.enable_devops_guru ? {"devops-guru-default" = replace("${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}", "/rds-cluster/", "rds-db-instance")} : null]...)
+  [var.enable_devops_guru ? { "devops-guru-default" = replace("${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}", "/rds-cluster/", "rds-db-instance") } : null]...)
   lifecycle {
     ignore_changes = [
       instance_class,
@@ -113,7 +120,7 @@ This command will always run and "|| true will prevent it to broke when enabled_
 The local exec is a temporary solution until terraform supports devops-guru https://github.com/hashicorp/terraform-provider-aws/issues/17919
 */
 resource "null_resource" "enable_devops_guru" {
-  count =  var.replica_min
+  count = var.replica_min
   provisioner "local-exec" {
     command = <<-EOF
       sleep 3 \
@@ -157,7 +164,7 @@ resource "aws_appautoscaling_policy" "autoscaling_read_replica_count" {
 
     scale_in_cooldown  = var.replica_scale_in_cooldown
     scale_out_cooldown = var.replica_scale_out_cooldown
-    target_value       = var.predefined_metric_type == "RDSReaderAverageCPUUtilization" ? var.replica_scale_cpu : tonumber(local.max_connections)*0.6
+    target_value       = var.predefined_metric_type == "RDSReaderAverageCPUUtilization" ? var.replica_scale_cpu : tonumber(local.max_connections) * 0.6
   }
 
   depends_on = [aws_appautoscaling_target.read_replica_count]
@@ -170,10 +177,6 @@ resource "aws_secretsmanager_secret" "master_password" {
 resource "aws_secretsmanager_secret_version" "master_password" {
   secret_id     = aws_secretsmanager_secret.master_password.id
   secret_string = local.master_password
-}
-
-data "aws_sns_topic" "horizontal_scaling_sns_topic" {
-  name = "cloud-db-factory-vertical-scaling-${var.environment}"
 }
 
 resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
@@ -252,7 +255,7 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
     value = var.tcp_keepalives_interval
   }
 
-    parameter {
+  parameter {
     name  = "log_min_duration_statement"
     value = var.environment == "prod" ? 2000 : var.log_min_duration_statement
   }

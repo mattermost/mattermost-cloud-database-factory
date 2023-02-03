@@ -10,3 +10,4 @@ coverage.out
 .idea
 build/_output/
 terraform/aws/database-factory-postgresql/.terraform.lock.hcl
+bin/

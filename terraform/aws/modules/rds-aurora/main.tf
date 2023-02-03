@@ -1,7 +1,18 @@
+terraform {
+  required_version = ">= 0.14.5"
+  backend "s3" {
+    region = "us-east-1"
+  }
+  required_providers {
+    aws    = "~> 3.17.0"
+    random = "~> 3.4.3"
+  }
+}
+
 locals {
   master_password         = var.password == "" ? random_password.master_password.result : var.password
-  performance_kms_key     = join("", aws_kms_key.aurora_performance_insights_key.*.keys_id)
-  performance_kms_key_arn = join("", aws_kms_key.aurora_performance_insights_key.*.arn)
+  performance_kms_key     = join("", aws_kms_key.aurora_performance_insights_key[*].keys_id)
+  performance_kms_key_arn = join("", aws_kms_key.aurora_performance_insights_key[*].arn)
   database_id             = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
 }
 
@@ -71,10 +82,10 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
 
   tags = merge(
     {
-      "Counter"               = 0,
-      "MultitenantDatabaseID" = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
-      "VpcID"                 = var.vpc_id,
-      "DatabaseType"          = "multitenant-rds",
+      "Counter"                             = 0,
+      "MultitenantDatabaseID"               = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
+      "VpcID"                               = var.vpc_id,
+      "DatabaseType"                        = "multitenant-rds",
       "MattermostCloudInstallationDatabase" = "MySQL/Aurora"
     },
     var.tags
@@ -152,10 +163,3 @@ resource "aws_secretsmanager_secret_version" "master_password" {
   secret_id     = aws_secretsmanager_secret.master_password.id
   secret_string = local.master_password
 }
-
-data "aws_sns_topic" "horizontal_scaling_sns_topic" {
-  name = "cloud-db-factory-vertical-scaling-${var.environment}"
-}
-
-
-

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -26,10 +26,10 @@ func NewClient(address string) *Client {
 	}
 }
 
-// closeBody ensures the Body of an http.Response is properly closed.
+// closeBody ensures the Body of a http.Response is properly closed.
 func closeBody(r *http.Response) {
 	if r.Body != nil {
-		_, _ = ioutil.ReadAll(r.Body)
+		_, _ = io.ReadAll(r.Body)
 		_ = r.Body.Close()
 	}
 }

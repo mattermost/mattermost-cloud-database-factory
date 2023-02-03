@@ -128,11 +128,6 @@ variable "replica_scale_cpu" {
   description = "Needs to be set when predefined_metric_type is RDSReaderAverageCPUUtilization"
 }
 
-variable "replica_scale_connections" {
-  type        = number
-  description = "Needs to be set when predefined_metric_type is RDSReaderAverageDatabaseConnections"
-}
-
 variable "replica_scale_in_cooldown" {
   type        = number
   description = "Cooldown in seconds before allowing further scaling operations after a scale in"
@@ -151,21 +146,6 @@ variable "ram_memory_bytes" {
 variable "random_page_cost" {
   description = "Sets the planner's estimate of the cost of a non-sequentially-fetched disk page. The default is 4.0. This value can be overridden for tables and indexes in a particular tablespace by setting the tablespace parameter of the same name."
   type        = number
-}
-
-variable "memory_cache_proportion" {
-  description = "Proportion of memory that is used for cache. By default it is 75%. A change in this variable should be reflected in database factory vertical scaling main.go as well."
-  type        = number
-}
-
-variable "connections_safety_percentage" {
-  description = "Percentage of max connections that when reached should trigger vertical scaling."
-  type        = number
-}
-
-variable "memory_alarm_limit" {
-  description = "Limit to trigger memory alarm. Number in Bytes (100MB)"
-  type        = string
 }
 
 variable "tcp_keepalives_count" {

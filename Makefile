@@ -12,6 +12,7 @@ TERRAFORM_VERSION=1.1.8
 ################################################################################
 
 GO ?= $(shell command -v go 2> /dev/null)
+MATTERMOST_CLOUD_DATABASE_FACTORY_IMAGE_REPO ?=mattermost/mattermost-cloud-database-factory
 MATTERMOST_CLOUD_DATABASE_FACTORY_IMAGE ?= mattermost/mattermost-cloud-database-factory:test
 MACHINE = $(shell uname -m)
 GOFLAGS ?= $(GOFLAGS:)
@@ -120,6 +121,11 @@ binaries:
 	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/dbfactory-linux-arm64 ./cmd/$(APP)
 	GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/dbfactory-darwin-arm64  ./cmd/$(APP)
 
+## Checks for vulnerabilities
+trivy: build-image
+	@echo running trivy
+	@trivy image --format table --exit-code $(TRIVY_EXIT_CODE) --ignore-unfixed --vuln-type $(TRIVY_VULN_TYPE) --severity $(TRIVY_SEVERITY) $(MATTERMOST_CLOUD_DATABASE_FACTORY_IMAGE)
+
 .PHONY: build
 build: ## Build the mattermost-cloud-database-factory
 	@echo Building Mattermost-Cloud-Database-Factory
@@ -128,6 +134,7 @@ build: ## Build the mattermost-cloud-database-factory
 .PHONY: build-image
 build-image:  ## Build the docker image for mattermost-cloud-database-factory
 	@echo Building Mattermost-cloud-database-factory Docker Image
+	echo $$DOCKERHUB_TOKEN | docker login --username $$DOCKERHUB_USERNAME --password-stdin && \
 	docker buildx build \
     --platform linux/arm64,linux/amd64 \
 	--build-arg DOCKER_BUILD_IMAGE=$(DOCKER_BUILD_IMAGE) \
@@ -139,20 +146,14 @@ build-image:  ## Build the docker image for mattermost-cloud-database-factory
 .PHONY: build-image-with-tag
 build-image-with-tag:  ## Build the docker image for mattermost-cloud-database-factory
 	@echo Building Mattermost-cloud-database-factory Docker Image
+	echo $$DOCKERHUB_TOKEN | docker login --username $$DOCKERHUB_USERNAME --password-stdin && \
 	docker buildx build \
     --platform linux/arm64,linux/amd64 \
 	--build-arg DOCKER_BUILD_IMAGE=$(DOCKER_BUILD_IMAGE) \
 	--build-arg DOCKER_BASE_IMAGE=$(DOCKER_BASE_IMAGE) \
-	. -f build/Dockerfile -t $(MATTERMOST_CLOUD_DATABASE_FACTORY_IMAGE):${TAG} \
+	. -f build/Dockerfile -t $(MATTERMOST_CLOUD_DATABASE_FACTORY_IMAGE_REPO):${TAG} \
 	--no-cache \
 	--push
-
-.PHONY: get-terraform
-get-terraform: ## Download terraform only if it's not available. Used in the docker build
-	@if [ ! -f build/terraform ]; then \
-		curl -Lo build/terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && cd build && unzip terraform.zip &&\
-		chmod +x terraform && rm terraform.zip;\
-	fi
 
 .PHONY: push-image-pr
 push-image-pr:
@@ -163,6 +164,13 @@ push-image-pr:
 push-image:
 	@echo Push Image
 	./scripts/push-image.sh
+
+.PHONY: get-terraform
+get-terraform: ## Download terraform only if it's not available. Used in the docker build
+	@if [ ! -f build/terraform ]; then \
+		curl -Lo build/terraform.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip && cd build && unzip terraform.zip &&\
+		chmod +x terraform && rm terraform.zip;\
+	fi
 
 .PHONY: install
 install: build
@@ -201,6 +209,12 @@ setup-test:
 test:
 	@echo Running tests
 	go test ./... -v -covermode=count -coverprofile=coverage.out
+
+# Install dependencies for release notes
+.PHONY: deps
+deps:
+	sudo apt update && sudo apt install hub git
+	GO111MODULE=on go install k8s.io/release/cmd/release-notes@latest
 
 # Cut a release
 .PHONY: release

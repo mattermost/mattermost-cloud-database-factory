@@ -22,11 +22,6 @@ PACKAGES=$(shell go list ./... | grep -v internal/mocks)
 
 ################################################################################
 
-#LOGRUS_URL := github.com/sirupsen/logrus
-#
-#LOGRUS_VERSION := $(shell find go.mod -type f -exec cat {} + | grep ${LOGRUS_URL} | awk '{print $$NF}')
-#
-#LOGRUS_PATH := $(GOPATH)/pkg/mod/${LOGRUS_URL}\@${LOGRUS_VERSION}
 TOOLS_BIN_DIR := $(abspath bin)
 GO_INSTALL = ./scripts/go_install.sh
 
@@ -41,6 +36,10 @@ OUTDATED_GEN := $(TOOLS_BIN_DIR)/$(OUTDATED_BIN)
 GOLANGCILINT_VER := v1.50.1
 GOLANGCILINT_BIN := golangci-lint
 GOLANGCILINT := $(TOOLS_BIN_DIR)/$(GOLANGCILINT_BIN)
+
+TRIVY_SEVERITY := CRITICAL
+TRIVY_EXIT_CODE := 1
+TRIVY_VULN_TYPE := os,library
 
 export GO111MODULE=on
 

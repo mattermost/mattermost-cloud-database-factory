@@ -175,25 +175,25 @@ variable "replica_scale_out_cooldown" {
 
 variable "ram_memory_bytes" {
   default = {
-    "db.t3.small"    = "2147483648"
-    "db.t3.medium"   = "4294967296"
-    "db.t3.large"    = "8589934592"
-    "db.t4g.small"   = "2147483648"
-    "db.t4g.medium"  = "4294967296"
-    "db.t4g.large"   = "8589934592"
-    "db.r5.large"    = "17179869184"
-    "db.r5.xlarge"   = "34359738368"
-    "db.r5.2xlarge"  = "68719476736"
-    "db.r5.4xlarge"  = "137438953472"
-    "db.r5.8xlarge"  = "274877906944"
-    "db.r5.12xlarge" = "412316860416"
-    "db.r5.16xlarge" = "549755813888"
-    "db.r5.24xlarge" = "824633720832"
-    "db.r6g.large"   = "17179869184"
-    "db.r6g.xlarge"  = "34359738368"
-    "db.r6g.2xlarge" = "68719476736"
-    "db.r6g.4xlarge" = "137438953472"
-    "db.r6g.8xlarge" = "274877906944"
+    "db.t3.small"     = "2147483648"
+    "db.t3.medium"    = "4294967296"
+    "db.t3.large"     = "8589934592"
+    "db.t4g.small"    = "2147483648"
+    "db.t4g.medium"   = "4294967296"
+    "db.t4g.large"    = "8589934592"
+    "db.r5.large"     = "17179869184"
+    "db.r5.xlarge"    = "34359738368"
+    "db.r5.2xlarge"   = "68719476736"
+    "db.r5.4xlarge"   = "137438953472"
+    "db.r5.8xlarge"   = "274877906944"
+    "db.r5.12xlarge"  = "412316860416"
+    "db.r5.16xlarge"  = "549755813888"
+    "db.r5.24xlarge"  = "824633720832"
+    "db.r6g.large"    = "17179869184"
+    "db.r6g.xlarge"   = "34359738368"
+    "db.r6g.2xlarge"  = "68719476736"
+    "db.r6g.4xlarge"  = "137438953472"
+    "db.r6g.8xlarge"  = "274877906944"
     "db.r6g.12xlarge" = "412316860416"
     "db.r6g.16xlarge" = "549755813888"
     "db.r6g.24xlarge" = "824633720832"
@@ -242,12 +242,6 @@ variable "tcp_keepalives_interval" {
   default     = 1
   description = "Time between TCP keepalive retransmits. Specifies the amount of time after which a TCP keepalive message that has not been acknowledged by the client should be retransmitted. If this value is specified without units, it is taken as seconds. A value of 0 (the default) selects the operating system's default."
   type        = number
-}
-
-variable "lambda_name" {
-  default     = "logs-to-opensearch"
-  description = "Lambda which ships logs to opensearch"
-  type        = string
 }
 
 variable "creation_snapshot_arn" {

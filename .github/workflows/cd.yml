@@ -41,6 +41,5 @@ jobs:
           fetch-depth: 0
       - name: ci/publish-release-notes
         run: |
-         sudo apt update && sudo apt install hub git
-         GO111MODULE=on go install k8s.io/release/cmd/release-notes@v0.13.0
+         make deps
          make release

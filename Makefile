@@ -212,7 +212,7 @@ test:
 # Install dependencies for release notes
 .PHONY: deps
 deps:
-	sudo apt update && sudo apt install hub git && GO111MODULE=on go install k8s.io/release/cmd/release-notes@latest
+	sudo apt update && sudo apt install hub git && GO111MODULE=on go install k8s.io/release/cmd/release-notes@v0.13.0
 
 # Cut a release
 .PHONY: release

@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: mattermost-cloud-database-factory
+  name: Cloud Database Factory
   annotations:
     github.com/project-slug: mattermost/mattermost-cloud-database-factory
     backstage.io/adr-location: docs/adrs

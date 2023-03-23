@@ -31,7 +31,7 @@ RUN  apk update  \
             py3-pip \
      && pip3 install --upgrade pip \
      && pip3 install --no-cache-dir awscli \
-     && apk add --no-cache terraform=1.3.8-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community/ \
+     && apk add --no-cache --update-cache terraform \
      && rm -rf /var/cache/apk/*
 
 COPY --from=build /mattermost-cloud-database-factory/build/_output/bin/dbfactory /mattermost-cloud-database-factory/dbfactory

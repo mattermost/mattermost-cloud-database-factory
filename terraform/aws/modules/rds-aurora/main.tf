@@ -1,7 +1,18 @@
+terraform {
+  required_version = ">= 0.14.5"
+  backend "s3" {
+    region = "us-east-1"
+  }
+  required_providers {
+    aws    = "~> 3.17.0"
+    random = "~> 3.4.3"
+  }
+}
+
 locals {
   master_password         = var.password == "" ? random_password.master_password.result : var.password
-  performance_kms_key     = join("", aws_kms_key.aurora_performance_insights_key.*.keys_id)
-  performance_kms_key_arn = join("", aws_kms_key.aurora_performance_insights_key.*.arn)
+  performance_kms_key     = join("", aws_kms_key.aurora_performance_insights_key[*].keys_id)
+  performance_kms_key_arn = join("", aws_kms_key.aurora_performance_insights_key[*].arn)
   database_id             = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
 }
 
@@ -67,15 +78,14 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   apply_immediately               = var.apply_immediately
   db_cluster_parameter_group_name = "mattermost-provisioner-rds-cluster-pg"
   copy_tags_to_snapshot           = var.copy_tags_to_snapshot
-  enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
   snapshot_identifier             = var.creation_snapshot_arn == "" ? null : var.creation_snapshot_arn
 
   tags = merge(
     {
-      "Counter"               = 0,
-      "MultitenantDatabaseID" = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
-      "VpcID"                 = var.vpc_id,
-      "DatabaseType"          = "multitenant-rds",
+      "Counter"                             = 0,
+      "MultitenantDatabaseID"               = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
+      "VpcID"                               = var.vpc_id,
+      "DatabaseType"                        = "multitenant-rds",
       "MattermostCloudInstallationDatabase" = "MySQL/Aurora"
     },
     var.tags
@@ -153,41 +163,3 @@ resource "aws_secretsmanager_secret_version" "master_password" {
   secret_id     = aws_secretsmanager_secret.master_password.id
   secret_string = local.master_password
 }
-
-data "aws_sns_topic" "horizontal_scaling_sns_topic" {
-  name = "cloud-db-factory-vertical-scaling-${var.environment}"
-}
-
-resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_cpu" {
-  count                     = var.replica_min
-  alarm_name                = format("rds-db-instance-multitenant-%s-%s-%s-cpu", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
-  comparison_operator       = "GreaterThanOrEqualToThreshold"
-  evaluation_periods        = "3"
-  metric_name               = "CPUUtilization"
-  namespace                 = "AWS/RDS"
-  period                    = "600"
-  statistic                 = "Average"
-  threshold                 = "70"
-  alarm_description         = "This metric monitors RDS DB Instance cpu utilization"
-  actions_enabled           = true  
-  alarm_actions             = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
-  dimensions                = {DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier}
-}
-
-resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_memory" {
-  count                     = var.replica_min
-  alarm_name                = format("rds-db-instance-multitenant-%s-%s-%s-memory", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
-  comparison_operator       = "LessThanOrEqualToThreshold"
-  evaluation_periods        = "3"
-  metric_name               = "FreeableMemory"
-  namespace                 = "AWS/RDS"
-  period                    = "600"
-  statistic                 = "Average"
-  threshold                 = "100000000"
-  alarm_description         = "This metric monitors RDS DB Instance freeable memory"
-  actions_enabled           = true  
-  alarm_actions             = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
-  dimensions                = {DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier}
-}
-
-

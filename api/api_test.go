@@ -79,6 +79,7 @@ func TestProvisionCluster(t *testing.T) {
 			DBEngine:              "postgres",
 			Replicas:              "3",
 			DBProxy:               true,
+			EnableDevopsGuru:      true,
 		})
 		require.EqualError(t, err, "failed with status code 400")
 	})
@@ -95,6 +96,7 @@ func TestProvisionCluster(t *testing.T) {
 			DBEngine:              "mysql",
 			Replicas:              "2",
 			DBProxy:               false,
+			EnableDevopsGuru:      false,
 		})
 		require.NoError(t, err)
 		require.Equal(t, "vpc-12345678", cluster.VPCID)
@@ -107,5 +109,6 @@ func TestProvisionCluster(t *testing.T) {
 		require.Equal(t, "mysql", cluster.DBEngine)
 		require.Equal(t, "2", cluster.Replicas)
 		require.Equal(t, false, cluster.DBProxy)
+		require.Equal(t, false, cluster.EnableDevopsGuru)
 	})
 }

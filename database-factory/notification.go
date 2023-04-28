@@ -14,10 +14,12 @@ import (
 
 func send(webhookURL string, payload mmmodel.CommandResponse) error {
 	marshalContent, _ := json.Marshal(payload)
-	var jsonStr = []byte(marshalContent)
-	req, err := http.NewRequest("POST", webhookURL, bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", webhookURL, bytes.NewBuffer(marshalContent))
 	req.Header.Set("X-Custom-Header", "aws-sns")
 	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		return err
+	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

@@ -99,12 +99,6 @@ variable "copy_tags_to_snapshot" {
   type        = bool
 }
 
-variable "enabled_cloudwatch_logs_exports" {
-  default     = ["postgresql"]
-  description = "Set of log types to enable for exporting to CloudWatch logs"
-  type        = list(string)
-}
-
 variable "instance_type" {
   default     = ""
   description = "The instance type of the RDS instance"
@@ -181,25 +175,25 @@ variable "replica_scale_out_cooldown" {
 
 variable "ram_memory_bytes" {
   default = {
-    "db.t3.small"    = "2147483648"
-    "db.t3.medium"   = "4294967296"
-    "db.t3.large"    = "8589934592"
-    "db.t4g.small"   = "2147483648"
-    "db.t4g.medium"  = "4294967296"
-    "db.t4g.large"   = "8589934592"
-    "db.r5.large"    = "17179869184"
-    "db.r5.xlarge"   = "34359738368"
-    "db.r5.2xlarge"  = "68719476736"
-    "db.r5.4xlarge"  = "137438953472"
-    "db.r5.8xlarge"  = "274877906944"
-    "db.r5.12xlarge" = "412316860416"
-    "db.r5.16xlarge" = "549755813888"
-    "db.r5.24xlarge" = "824633720832"
-    "db.r6g.large"   = "17179869184"
-    "db.r6g.xlarge"  = "34359738368"
-    "db.r6g.2xlarge" = "68719476736"
-    "db.r6g.4xlarge" = "137438953472"
-    "db.r6g.8xlarge" = "274877906944"
+    "db.t3.small"     = "2147483648"
+    "db.t3.medium"    = "4294967296"
+    "db.t3.large"     = "8589934592"
+    "db.t4g.small"    = "2147483648"
+    "db.t4g.medium"   = "4294967296"
+    "db.t4g.large"    = "8589934592"
+    "db.r5.large"     = "17179869184"
+    "db.r5.xlarge"    = "34359738368"
+    "db.r5.2xlarge"   = "68719476736"
+    "db.r5.4xlarge"   = "137438953472"
+    "db.r5.8xlarge"   = "274877906944"
+    "db.r5.12xlarge"  = "412316860416"
+    "db.r5.16xlarge"  = "549755813888"
+    "db.r5.24xlarge"  = "824633720832"
+    "db.r6g.large"    = "17179869184"
+    "db.r6g.xlarge"   = "34359738368"
+    "db.r6g.2xlarge"  = "68719476736"
+    "db.r6g.4xlarge"  = "137438953472"
+    "db.r6g.8xlarge"  = "274877906944"
     "db.r6g.12xlarge" = "412316860416"
     "db.r6g.16xlarge" = "549755813888"
     "db.r6g.24xlarge" = "824633720832"
@@ -250,19 +244,20 @@ variable "tcp_keepalives_interval" {
   type        = number
 }
 
-variable "lambda_name" {
-  default     = "logs-to-opensearch"
-  description = "Lambda which ships logs to opensearch"
-  type        = string
-}
-variable "cwl_endpoint" {
-  default     = "logs.us-east-1.amazonaws.com"
-  description = "Cloudwatch Logs endpoint"
-  type        = string
-}
-
 variable "creation_snapshot_arn" {
   type        = string
   description = "The ARN of the snapshot to create from"
   default     = ""
+}
+
+variable "enable_devops_guru" {
+  default     = false
+  type        = string
+  description = "Set it to true will enable AWS Devops Guru service for DB instances within the cluster."
+}
+
+variable "log_min_duration_statement" {
+  default     = -1
+  type        = number
+  description = "The duration of each completed statement to be logged."
 }

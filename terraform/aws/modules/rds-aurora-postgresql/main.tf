@@ -1,13 +1,20 @@
-data "aws_caller_identity" "current" {}
-
-data "aws_region" "current" {}
+terraform {
+  required_version = ">= 0.14.5"
+  backend "s3" {
+    region = "us-east-1"
+  }
+  required_providers {
+    aws    = "~> 3.17.0"
+    random = "~> 3.4.3"
+    null   = "~> 3.2.1"
+  }
+}
 
 locals {
   master_password              = var.password == "" ? random_password.master_password.result : var.password
   database_id                  = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
-  max_connections              = var.ram_memory_bytes[var.instance_type]/9531392
+  max_connections              = var.ram_memory_bytes[var.instance_type] / 9531392
   performance_insights_enabled = var.environment == "prod" ? var.performance_insights_enabled : false
-  account_details              = join(":", [data.aws_region.current.name, data.aws_caller_identity.current.account_id])
 }
 
 # Random string to use as master password unless one is specified
@@ -58,15 +65,14 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   apply_immediately               = var.apply_immediately
   db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.cluster_parameter_group_postgresql.id
   copy_tags_to_snapshot           = var.copy_tags_to_snapshot
-  enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
   snapshot_identifier             = var.creation_snapshot_arn == "" ? null : var.creation_snapshot_arn
 
   tags = merge(
     {
-      "Counter"               = 0,
-      "MultitenantDatabaseID" = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
-      "VpcID"                 = var.vpc_id,
-      "DatabaseType"          = var.multitenant_tag,
+      "Counter"                             = 0,
+      "MultitenantDatabaseID"               = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id),
+      "VpcID"                               = var.vpc_id,
+      "DatabaseType"                        = var.multitenant_tag,
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
     },
     var.tags
@@ -99,13 +105,36 @@ resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
       "DatabaseType"                        = var.multitenant_tag,
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
     },
-    var.tags
-  )
-
+    var.tags,
+  [var.enable_devops_guru ? { "devops-guru-default" = replace("${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}", "/rds-cluster/", "rds-db-instance") } : null]...)
   lifecycle {
     ignore_changes = [
       instance_class,
     ]
+  }
+}
+
+/*
+sleep 3 is a waiting time between tag Add/Remove and Devops Guru enable/disable.
+This command will always run and "|| true will prevent it to broke when enabled_devops_guru is false and there's nothing to disable
+The local exec is a temporary solution until terraform supports devops-guru https://github.com/hashicorp/terraform-provider-aws/issues/17919
+*/
+resource "null_resource" "enable_devops_guru" {
+  count = var.replica_min
+  provisioner "local-exec" {
+    command = <<-EOF
+      sleep 3 \
+      && aws devops-guru update-resource-collection \
+      --action ${var.enable_devops_guru == true ? "ADD" : "REMOVE"} \
+      --resource-collection '{"Tags": [{"AppBoundaryKey": "devops-guru-default", "TagValues": ["${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}"]}]}' \
+      || true
+EOF
+  }
+  depends_on = [
+    aws_rds_cluster_instance.provisioning_rds_db_instance
+  ]
+  triggers = {
+    enable_devops_guru = var.enable_devops_guru
   }
 }
 
@@ -135,7 +164,7 @@ resource "aws_appautoscaling_policy" "autoscaling_read_replica_count" {
 
     scale_in_cooldown  = var.replica_scale_in_cooldown
     scale_out_cooldown = var.replica_scale_out_cooldown
-    target_value       = var.predefined_metric_type == "RDSReaderAverageCPUUtilization" ? var.replica_scale_cpu : tonumber(local.max_connections)*0.6
+    target_value       = var.predefined_metric_type == "RDSReaderAverageCPUUtilization" ? var.replica_scale_cpu : tonumber(local.max_connections) * 0.6
   }
 
   depends_on = [aws_appautoscaling_target.read_replica_count]
@@ -149,84 +178,6 @@ resource "aws_secretsmanager_secret_version" "master_password" {
   secret_id     = aws_secretsmanager_secret.master_password.id
   secret_string = local.master_password
 }
-
-data "aws_sns_topic" "horizontal_scaling_sns_topic" {
-  name = "cloud-db-factory-vertical-scaling-${var.environment}"
-}
-
-resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_cpu" {
-  count               = var.replica_min
-  alarm_name          = format("rds-db-instance-multitenant-%s-%s-%s-cpu", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = "3"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/RDS"
-  period              = "600"
-  statistic           = "Average"
-  threshold           = "70"
-  alarm_description   = "This metric monitors RDS DB Instance cpu utilization"
-  actions_enabled     = true
-  alarm_actions       = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
-  dimensions          = { DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier }
-}
-
-resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_connections" {
-  count               = var.replica_min
-  alarm_name          = format("rds-db-instance-multitenant-%s-%s-%s-connections", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = "3"
-  metric_name         = "DatabaseConnections"
-  namespace           = "AWS/RDS"
-  period              = "600"
-  statistic           = "Average"
-  threshold           = local.max_connections * var.connections_safety_percentage
-  alarm_description   = "This metric monitors RDS DB Instance connections"
-  actions_enabled     = true
-  alarm_actions       = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
-  dimensions          = { DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier }
-
-  lifecycle {
-    ignore_changes = [
-      threshold,
-    ]
-  }
-}
-
-resource "aws_cloudwatch_metric_alarm" "db_instances_alarm_memory" {
-  count               = var.replica_min
-  alarm_name          = format("rds-db-instance-multitenant-%s-%s-%s-memory", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = "3"
-  threshold           = var.memory_alarm_limit
-  alarm_description   = "This metric monitors RDS DB Instance freeable memory"
-  metric_query {
-    id          = "e1"
-    expression  = "m1+${var.memory_cache_proportion}*${var.ram_memory_bytes[var.instance_type]}"
-    label       = "Total Free Memory"
-    return_data = "true"
-  }
-
-  metric_query {
-    id = "m1"
-    metric {
-      metric_name = "FreeableMemory"
-      namespace   = "AWS/RDS"
-      period      = "600"
-      stat        = "Average"
-      dimensions  = { DBInstanceIdentifier = aws_rds_cluster_instance.provisioning_rds_db_instance[count.index].identifier }
-    }
-    return_data = "false"
-  }
-  actions_enabled = true
-  alarm_actions   = [data.aws_sns_topic.horizontal_scaling_sns_topic.arn]
-
-  lifecycle {
-    ignore_changes = [
-      metric_query
-    ]
-  }
-}
-
 
 resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
 
@@ -257,6 +208,11 @@ resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
   parameter {
     name  = "tcp_keepalives_interval"
     value = var.tcp_keepalives_interval
+  }
+
+  parameter {
+    name  = "log_min_duration_statement"
+    value = var.environment == "prod" ? 2000 : var.log_min_duration_statement
   }
 
   tags = merge(
@@ -299,15 +255,15 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
     value = var.tcp_keepalives_interval
   }
 
+  parameter {
+    name  = "log_min_duration_statement"
+    value = var.environment == "prod" ? 2000 : var.log_min_duration_statement
+  }
+
   tags = merge(
     {
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
     },
     var.tags
   )
-}
-
-resource "aws_cloudwatch_log_group" "rds-cluster-log-group" {
-  name            = format("rds-cluster-multitenant-%s-%s/postgresql", split("-", var.vpc_id)[1], local.database_id)
-  depends_on = [aws_rds_cluster.provisioning_rds_cluster]
 }

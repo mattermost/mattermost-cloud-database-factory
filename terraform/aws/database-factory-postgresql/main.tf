@@ -34,7 +34,6 @@ module "rds_setup" {
   storage_encrypted                = var.storage_encrypted
   apply_immediately                = var.apply_immediately
   copy_tags_to_snapshot            = var.copy_tags_to_snapshot
-  enabled_cloudwatch_logs_exports  = var.enabled_cloudwatch_logs_exports
   instance_type                    = var.instance_type
   monitoring_interval              = var.monitoring_interval
   performance_insights_enabled     = var.performance_insights_enabled
@@ -56,7 +55,8 @@ module "rds_setup" {
   multitenant_tag                  = var.multitenant_tag
   creation_snapshot_arn            = var.creation_snapshot_arn
   connections_safety_percentage    = var.connections_safety_percentage
-
+  enable_devops_guru               = var.enable_devops_guru
+  log_min_duration_statement       = var.log_min_duration_statement
   tags = {
     Owner       = "cloud-team"
     Terraform   = "true"

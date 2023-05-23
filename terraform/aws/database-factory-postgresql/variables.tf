@@ -154,12 +154,6 @@ variable "multitenant_tag" {
   description = "The tag that will be applied and identify the type of multitenant DB cluster(multitenant-rds-dbproxy or multitenant-rds)."
 }
 
-# NOT IN USE. Currently the 50% of max_connections parameter is set as a limit.
-variable "replica_scale_connections" {
-  default     = 100000
-  type        = number
-  description = "Needs to be set when predefined_metric_type is RDSReaderAverageDatabaseConnections"
-}
 
 variable "replica_scale_in_cooldown" {
   default     = 300
@@ -202,23 +196,6 @@ variable "ram_memory_bytes" {
   description = "The RAM memory of each instance type in Bytes. A change in this variable should be reflected in database factory vertical scaling main.go as well."
 }
 
-variable "memory_alarm_limit" {
-  default     = "100000000"
-  description = "Limit to trigger memory alarm. Number in Bytes (100MB)"
-  type        = string
-}
-
-variable "memory_cache_proportion" {
-  default     = 0.75
-  description = "Proportion of memory that is used for cache. By default it is 75%. A change in this variable should be reflected in database factory vertical scaling main.go as well."
-  type        = number
-}
-
-variable "connections_safety_percentage" {
-  default     = 0.85
-  description = "Percentage of max connections that when reached should trigger vertical scaling."
-  type        = number
-}
 
 variable "tcp_keepalives_count" {
   default     = 5

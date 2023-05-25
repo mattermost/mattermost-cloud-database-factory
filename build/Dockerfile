@@ -36,6 +36,7 @@ RUN  apk update  \
 
 COPY --from=build /mattermost-cloud-database-factory/build/_output/bin/dbfactory /mattermost-cloud-database-factory/dbfactory
 COPY --from=build /mattermost-cloud-database-factory/build/bin /usr/local/bin
+COPY --from=build /mattermost-cloud-database-factory/terraform /mattermost-cloud-database-factory/terraform
 
 RUN  /usr/local/bin/user_setup
 WORKDIR /mattermost-cloud-database-factory/

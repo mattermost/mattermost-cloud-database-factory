@@ -4,7 +4,7 @@ terraform {
     region = "us-east-1"
   }
   required_providers {
-    aws = "~> 3.17.0"
+    aws = "~> 5.0.1"
   }
 }
 

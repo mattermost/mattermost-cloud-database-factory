@@ -67,7 +67,7 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   db_instance_parameter_group_name = aws_db_parameter_group.db_parameter_group_postgresql.id
   copy_tags_to_snapshot            = var.copy_tags_to_snapshot
   snapshot_identifier              = var.creation_snapshot_arn == "" ? null : var.creation_snapshot_arn
-  allow_major_version_upgrade      = true
+  allow_major_version_upgrade      = var.allow_major_version_upgrade
 
   tags = merge(
     {

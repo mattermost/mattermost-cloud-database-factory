@@ -7,18 +7,19 @@ import (
 
 // Cluster represents a RDS Aurora cluster.
 type Cluster struct {
-	VPCID                 string
-	ClusterID             string
-	Environment           string
-	StateStore            string
-	Apply                 bool
-	InstanceType          string
-	BackupRetentionPeriod string
-	DBEngine              string
-	Replicas              string
-	DBProxy               bool
-	CreationSnapshotARN   string
-	EnableDevopsGuru      bool
+	VPCID                    string
+	ClusterID                string
+	Environment              string
+	StateStore               string
+	Apply                    bool
+	InstanceType             string
+	BackupRetentionPeriod    string
+	DBEngine                 string
+	Replicas                 string
+	DBProxy                  bool
+	CreationSnapshotARN      string
+	EnableDevopsGuru         bool
+	AllowMajorVersionUpgrade bool
 }
 
 // ClusterFromReader decodes a json-encoded cluster from the given io.Reader.

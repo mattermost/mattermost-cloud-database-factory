@@ -31,6 +31,7 @@ func init() {
 	clusterProvisionCmd.Flags().Bool("dbproxy", true, "If enabled the multitenant DB cluster will be used with a DB proxy.")
 	clusterProvisionCmd.Flags().String("creation-snapshot-arn", "", "The ARN of the snapshot to use for the DB cluster (default \"\")")
 	clusterProvisionCmd.Flags().Bool("devops-guru", false, "Enable the AWS service Devops Guru to all database instances within a cluster.")
+	clusterProvisionCmd.Flags().Bool("allow-major-version-upgrade", false, "Enable to allow major engine version upgrades when changing engine versions.")
 
 	clusterCmd.AddCommand(clusterProvisionCmd)
 
@@ -67,20 +68,22 @@ var clusterProvisionCmd = &cobra.Command{
 		dbProxy, _ := command.Flags().GetBool("dbproxy")
 		creationSnapshotARN, _ := command.Flags().GetString("creation-snapshot-arn")
 		enableDevopsGuru, _ := command.Flags().GetBool("devops-guru")
+		allowMajorVersionUpgrade, _ := command.Flags().GetBool("allow-major-version-upgrade")
 
 		cluster, err := client.ProvisionCluster(&model.ProvisionClusterRequest{
-			VPCID:                 vpcID,
-			ClusterID:             clusterID,
-			Environment:           environment,
-			StateStore:            stateStore,
-			Apply:                 apply,
-			InstanceType:          instanceType,
-			BackupRetentionPeriod: backupRetentionPeriod,
-			DBEngine:              dbEngine,
-			Replicas:              replicas,
-			DBProxy:               dbProxy,
-			CreationSnapshotARN:   creationSnapshotARN,
-			EnableDevopsGuru:      enableDevopsGuru,
+			VPCID:                    vpcID,
+			ClusterID:                clusterID,
+			Environment:              environment,
+			StateStore:               stateStore,
+			Apply:                    apply,
+			InstanceType:             instanceType,
+			BackupRetentionPeriod:    backupRetentionPeriod,
+			DBEngine:                 dbEngine,
+			Replicas:                 replicas,
+			DBProxy:                  dbProxy,
+			CreationSnapshotARN:      creationSnapshotARN,
+			EnableDevopsGuru:         enableDevopsGuru,
+			AllowMajorVersionUpgrade: allowMajorVersionUpgrade,
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to provision RDS cluster")

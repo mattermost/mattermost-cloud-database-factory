@@ -10,18 +10,19 @@ import (
 
 // ProvisionClusterRequest specifies the parameters for a new cluster.
 type ProvisionClusterRequest struct {
-	VPCID                 string `json:"vpcID,omitempty"`
-	ClusterID             string `json:"clusterID,omitempty"`
-	Environment           string `json:"environment,omitempty"`
-	StateStore            string `json:"stateStore,omitempty"`
-	Apply                 bool   `json:"apply,omitempty"`
-	InstanceType          string `json:"instanceType"`
-	BackupRetentionPeriod string `json:"backupRetentionPeriod"`
-	DBEngine              string `json:"dbEngine"`
-	Replicas              string `json:"replicas"`
-	DBProxy               bool   `json:"dbProxy"`
-	CreationSnapshotARN   string `json:"creationSnapshotARN,omitempty"`
-	EnableDevopsGuru      bool   `json:"enableDevopsGuru"`
+	VPCID                    string `json:"vpcID,omitempty"`
+	ClusterID                string `json:"clusterID,omitempty"`
+	Environment              string `json:"environment,omitempty"`
+	StateStore               string `json:"stateStore,omitempty"`
+	Apply                    bool   `json:"apply,omitempty"`
+	InstanceType             string `json:"instanceType"`
+	BackupRetentionPeriod    string `json:"backupRetentionPeriod"`
+	DBEngine                 string `json:"dbEngine"`
+	Replicas                 string `json:"replicas"`
+	DBProxy                  bool   `json:"dbProxy"`
+	CreationSnapshotARN      string `json:"creationSnapshotARN,omitempty"`
+	EnableDevopsGuru         bool   `json:"enableDevopsGuru"`
+	AllowMajorVersionUpgrade bool   `json:"allowMajorVersionUpgrade,omitempty"`
 }
 
 // NewProvisionClusterRequestFromReader decodes the request and returns after validation and setting the defaults.

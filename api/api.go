@@ -40,7 +40,8 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 //		  "replicas": "3",
 //		  "dbProxy": true,
 //		  "creationSnapshotARN": "",
-//		  "enableDevopsGuru": false
+//		  "enableDevopsGuru": false,
+//		  "allowMajorVersionUpgrade": false,
 //	}
 func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
 	provisionClusterRequest, err := model.NewProvisionClusterRequestFromReader(r.Body)
@@ -51,18 +52,19 @@ func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request
 	}
 
 	cluster := model.Cluster{
-		VPCID:                 provisionClusterRequest.VPCID,
-		ClusterID:             provisionClusterRequest.ClusterID,
-		Environment:           provisionClusterRequest.Environment,
-		StateStore:            provisionClusterRequest.StateStore,
-		Apply:                 provisionClusterRequest.Apply,
-		InstanceType:          provisionClusterRequest.InstanceType,
-		BackupRetentionPeriod: provisionClusterRequest.BackupRetentionPeriod,
-		DBEngine:              provisionClusterRequest.DBEngine,
-		Replicas:              provisionClusterRequest.Replicas,
-		DBProxy:               provisionClusterRequest.DBProxy,
-		CreationSnapshotARN:   provisionClusterRequest.CreationSnapshotARN,
-		EnableDevopsGuru:      provisionClusterRequest.EnableDevopsGuru,
+		VPCID:                    provisionClusterRequest.VPCID,
+		ClusterID:                provisionClusterRequest.ClusterID,
+		Environment:              provisionClusterRequest.Environment,
+		StateStore:               provisionClusterRequest.StateStore,
+		Apply:                    provisionClusterRequest.Apply,
+		InstanceType:             provisionClusterRequest.InstanceType,
+		BackupRetentionPeriod:    provisionClusterRequest.BackupRetentionPeriod,
+		DBEngine:                 provisionClusterRequest.DBEngine,
+		Replicas:                 provisionClusterRequest.Replicas,
+		DBProxy:                  provisionClusterRequest.DBProxy,
+		CreationSnapshotARN:      provisionClusterRequest.CreationSnapshotARN,
+		EnableDevopsGuru:         provisionClusterRequest.EnableDevopsGuru,
+		AllowMajorVersionUpgrade: provisionClusterRequest.AllowMajorVersionUpgrade,
 	}
 
 	go dbfactory.InitProvisionCluster(&cluster)

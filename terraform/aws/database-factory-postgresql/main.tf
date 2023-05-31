@@ -4,7 +4,7 @@ terraform {
     region = "us-east-1"
   }
   required_providers {
-    aws = "~> 3.17.0"
+    aws = "~> 5.0.1"
   }
 }
 
@@ -53,6 +53,7 @@ module "rds_setup" {
   creation_snapshot_arn            = var.creation_snapshot_arn
   enable_devops_guru               = var.enable_devops_guru
   log_min_duration_statement       = var.log_min_duration_statement
+  allow_major_version_upgrade      = var.allow_major_version_upgrade
   tags = {
     Owner       = "cloud-team"
     Terraform   = "true"

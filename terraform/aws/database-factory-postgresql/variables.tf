@@ -238,3 +238,9 @@ variable "log_min_duration_statement" {
   type        = number
   description = "The duration of each completed statement to be logged."
 }
+
+variable "allow_major_version_upgrade" {
+  default     = false
+  type        = bool
+  description = "Enable to allow major engine version upgrades when changing engine versions"
+} 

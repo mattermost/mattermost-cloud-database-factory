@@ -70,33 +70,35 @@ func TestProvisionCluster(t *testing.T) {
 
 	t.Run("empty state store", func(t *testing.T) {
 		_, err := client.ProvisionCluster(&model.ProvisionClusterRequest{
-			VPCID:                 "vpc-12345678",
-			ClusterID:             "12345678",
-			Environment:           "test",
-			StateStore:            "",
-			Apply:                 false,
-			BackupRetentionPeriod: "15",
-			DBEngine:              "postgres",
-			Replicas:              "3",
-			DBProxy:               true,
-			EnableDevopsGuru:      true,
+			VPCID:                    "vpc-12345678",
+			ClusterID:                "12345678",
+			Environment:              "test",
+			StateStore:               "",
+			Apply:                    false,
+			BackupRetentionPeriod:    "15",
+			DBEngine:                 "postgres",
+			Replicas:                 "3",
+			DBProxy:                  true,
+			EnableDevopsGuru:         true,
+			AllowMajorVersionUpgrade: false,
 		})
 		require.EqualError(t, err, "failed with status code 400")
 	})
 
 	t.Run("valid", func(t *testing.T) {
 		cluster, err := client.ProvisionCluster(&model.ProvisionClusterRequest{
-			VPCID:                 "vpc-12345678",
-			ClusterID:             "12345678",
-			Environment:           "test",
-			StateStore:            "testbucket",
-			Apply:                 false,
-			InstanceType:          "test-type",
-			BackupRetentionPeriod: "16",
-			DBEngine:              "mysql",
-			Replicas:              "2",
-			DBProxy:               false,
-			EnableDevopsGuru:      false,
+			VPCID:                    "vpc-12345678",
+			ClusterID:                "12345678",
+			Environment:              "test",
+			StateStore:               "testbucket",
+			Apply:                    false,
+			InstanceType:             "test-type",
+			BackupRetentionPeriod:    "16",
+			DBEngine:                 "mysql",
+			Replicas:                 "2",
+			DBProxy:                  false,
+			EnableDevopsGuru:         false,
+			AllowMajorVersionUpgrade: false,
 		})
 		require.NoError(t, err)
 		require.Equal(t, "vpc-12345678", cluster.VPCID)
@@ -110,5 +112,6 @@ func TestProvisionCluster(t *testing.T) {
 		require.Equal(t, "2", cluster.Replicas)
 		require.Equal(t, false, cluster.DBProxy)
 		require.Equal(t, false, cluster.EnableDevopsGuru)
+		require.Equal(t, false, cluster.AllowMajorVersionUpgrade)
 	})
 }

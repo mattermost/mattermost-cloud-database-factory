@@ -66,7 +66,12 @@ or via a API call:
     "apply": true,
     "instanceType": "",
     "clusterID": "",
-    "backupRetentionPeriod" : ""
+    "backupRetentionPeriod" : "",
+    "dbEngine": "postgresql",
+    "replicas": "1",
+    "dbProxy": true,
+    "EnableDevopsGuru": false,
+    "AllowMajorVersionUpgrade": true
 }
 ```
 

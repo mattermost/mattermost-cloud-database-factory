@@ -4,7 +4,7 @@ terraform {
     region = "us-east-1"
   }
   required_providers {
-    aws    = "~> 3.17.0"
+    aws    = "~> 5.0.1"
     random = "~> 3.4.3"
     null   = "~> 3.2.1"
   }
@@ -46,26 +46,28 @@ data "aws_vpc" "provisioning_vpc" {
 }
 
 resource "aws_rds_cluster" "provisioning_rds_cluster" {
-  cluster_identifier              = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
-  engine                          = var.engine
-  engine_version                  = var.engine_version
-  kms_key_id                      = aws_kms_key.aurora_storage_key.arn
-  master_username                 = var.username
-  master_password                 = local.master_password
-  final_snapshot_identifier       = "${var.final_snapshot_identifier_prefix}-${format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
-  skip_final_snapshot             = var.skip_final_snapshot
-  deletion_protection             = var.deletion_protection
-  backup_retention_period         = var.backup_retention_period
-  preferred_backup_window         = var.preferred_backup_window
-  preferred_maintenance_window    = var.preferred_maintenance_window
-  port                            = var.port
-  db_subnet_group_name            = "mattermost-provisioner-db-${var.vpc_id}-postgresql"
-  vpc_security_group_ids          = [data.aws_security_group.db_sg.id]
-  storage_encrypted               = var.storage_encrypted
-  apply_immediately               = var.apply_immediately
-  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.cluster_parameter_group_postgresql.id
-  copy_tags_to_snapshot           = var.copy_tags_to_snapshot
-  snapshot_identifier             = var.creation_snapshot_arn == "" ? null : var.creation_snapshot_arn
+  cluster_identifier               = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
+  engine                           = var.engine
+  engine_version                   = var.engine_version
+  kms_key_id                       = aws_kms_key.aurora_storage_key.arn
+  master_username                  = var.username
+  master_password                  = local.master_password
+  final_snapshot_identifier        = "${var.final_snapshot_identifier_prefix}-${format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
+  skip_final_snapshot              = var.skip_final_snapshot
+  deletion_protection              = var.deletion_protection
+  backup_retention_period          = var.backup_retention_period
+  preferred_backup_window          = var.preferred_backup_window
+  preferred_maintenance_window     = var.preferred_maintenance_window
+  port                             = var.port
+  db_subnet_group_name             = "mattermost-provisioner-db-${var.vpc_id}-postgresql"
+  vpc_security_group_ids           = [data.aws_security_group.db_sg.id]
+  storage_encrypted                = var.storage_encrypted
+  apply_immediately                = var.apply_immediately
+  db_cluster_parameter_group_name  = aws_rds_cluster_parameter_group.cluster_parameter_group_postgresql.id
+  db_instance_parameter_group_name = aws_db_parameter_group.db_parameter_group_postgresql.id
+  copy_tags_to_snapshot            = var.copy_tags_to_snapshot
+  snapshot_identifier              = var.creation_snapshot_arn == "" ? null : var.creation_snapshot_arn
+  allow_major_version_upgrade      = var.allow_major_version_upgrade
 
   tags = merge(
     {
@@ -139,7 +141,9 @@ EOF
 }
 
 resource "random_string" "db_cluster_identifier" {
-  length = 8
+  length  = 8
+  special = false
+  upper   = false
 }
 
 resource "aws_appautoscaling_target" "read_replica_count" {
@@ -181,8 +185,8 @@ resource "aws_secretsmanager_secret_version" "master_password" {
 
 resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
 
-  name   = format("rds-cluster-multitenant-%s-%s-pg", split("-", var.vpc_id)[1], local.database_id)
-  family = "aurora-postgresql12"
+  name_prefix = format("rds-cluster-multitenant-%s-%s-pg", split("-", var.vpc_id)[1], random_string.db_cluster_identifier.result)
+  family      = "aurora-postgresql13"
 
   parameter {
     apply_method = "pending-reboot"
@@ -221,12 +225,16 @@ resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
     },
     var.tags
   )
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" {
 
-  name   = format("rds-cluster-multitenant-%s-%s-cluster-pg", split("-", var.vpc_id)[1], local.database_id)
-  family = "aurora-postgresql12"
+  name_prefix = format("rds-cluster-multitenant-%s-%s-cluster-pg", split("-", var.vpc_id)[1], random_string.db_cluster_identifier.result)
+  family      = "aurora-postgresql13"
 
 
   parameter {
@@ -266,4 +274,8 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
     },
     var.tags
   )
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }

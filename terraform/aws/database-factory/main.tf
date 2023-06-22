@@ -50,6 +50,7 @@ module "rds_setup" {
   replica_scale_out_cooldown       = var.replica_scale_out_cooldown
   creation_snapshot_arn            = var.creation_snapshot_arn
   multitenant_tag                  = var.multitenant_tag
+  enabled_cloudwatch_logs_exports  = var.enabled_cloudwatch_logs_exports
 
   # Added for compatibility
 

@@ -77,6 +77,7 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   copy_tags_to_snapshot            = var.copy_tags_to_snapshot
   snapshot_identifier              = var.creation_snapshot_arn == "" ? null : var.creation_snapshot_arn
   allow_major_version_upgrade      = var.allow_major_version_upgrade
+  enabled_cloudwatch_logs_exports  = var.enabled_cloudwatch_logs_exports
 
   tags = merge(
     {
@@ -289,4 +290,9 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
   lifecycle {
     create_before_destroy = true
   }
+}
+
+resource "aws_cloudwatch_log_group" "rds-cluster-log-group" {
+  name       = format("rds-cluster-multitenant-%s-%s/postgresql", split("-", var.vpc_id)[1], local.database_id)
+  depends_on = [aws_rds_cluster.provisioning_rds_cluster]
 }

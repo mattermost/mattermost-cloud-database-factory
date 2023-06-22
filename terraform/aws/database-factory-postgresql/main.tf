@@ -57,6 +57,7 @@ module "rds_setup" {
   enable_devops_guru               = var.enable_devops_guru
   log_min_duration_statement       = var.log_min_duration_statement
   allow_major_version_upgrade      = var.allow_major_version_upgrade
+  enabled_cloudwatch_logs_exports  = var.enabled_cloudwatch_logs_exports
   tags = {
     Owner       = "cloud-team"
     Terraform   = "true"

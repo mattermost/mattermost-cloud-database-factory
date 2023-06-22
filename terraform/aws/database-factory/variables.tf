@@ -177,3 +177,9 @@ variable "multitenant_tag" {
   type        = string
   description = "The tag that will be applied and identify the type of multitenant DB cluster(multitenant-rds-dbproxy or multitenant-rds)."
 }
+
+variable "enabled_cloudwatch_logs_exports" {
+  default     = ["audit", "error", "general", "slowquery"]
+  description = "Set of log types to enable for exporting to CloudWatch logs"
+  type        = list(string)
+}

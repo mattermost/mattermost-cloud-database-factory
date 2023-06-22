@@ -4,8 +4,14 @@ terraform {
     region = "us-east-1"
   }
   required_providers {
-    aws    = "~> 5.0.1"
-    random = "~> 3.4.3"
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.17.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.4.3"
+    }
   }
 }
 

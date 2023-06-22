@@ -293,6 +293,6 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
 }
 
 resource "aws_cloudwatch_log_group" "rds-cluster-log-group" {
-   name            = format("rds-cluster-multitenant-%s-%s/postgresql", split("-", var.vpc_id)[1], local.database_id)
-   depends_on = [aws_rds_cluster.provisioning_rds_cluster]
- }
+  name       = format("rds-cluster-multitenant-%s-%s/postgresql", split("-", var.vpc_id)[1], local.database_id)
+  depends_on = [aws_rds_cluster.provisioning_rds_cluster]
+}

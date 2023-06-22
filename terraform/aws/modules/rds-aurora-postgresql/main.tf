@@ -4,9 +4,18 @@ terraform {
     region = "us-east-1"
   }
   required_providers {
-    aws    = "~> 5.0.1"
-    random = "~> 3.4.3"
-    null   = "~> 3.2.1"
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0.1"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.4.3"
+    }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2.1"
+    }
   }
 }
 
@@ -221,7 +230,8 @@ resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
 
   tags = merge(
     {
-      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
+      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora",
+      "MultitenantDatabaseID"               = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
     },
     var.tags
   )
@@ -270,7 +280,8 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
 
   tags = merge(
     {
-      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
+      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora",
+      "MultitenantDatabaseID"               = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
     },
     var.tags
   )

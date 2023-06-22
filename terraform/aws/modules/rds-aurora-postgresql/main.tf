@@ -221,7 +221,8 @@ resource "aws_db_parameter_group" "db_parameter_group_postgresql" {
 
   tags = merge(
     {
-      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
+      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora",
+      "MultitenantDatabaseID"               = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
     },
     var.tags
   )
@@ -270,7 +271,8 @@ resource "aws_rds_cluster_parameter_group" "cluster_parameter_group_postgresql" 
 
   tags = merge(
     {
-      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
+      "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora",
+      "MultitenantDatabaseID"               = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
     },
     var.tags
   )

@@ -188,3 +188,8 @@ variable "allow_major_version_upgrade" {
   type        = bool
   description = "Enable to allow major engine version upgrades when changing engine versions"
 } 
+
+variable "enabled_cloudwatch_logs_exports" {
+   description = "Set of log types to enable for exporting to CloudWatch logs"
+   type        = list(string)
+ }

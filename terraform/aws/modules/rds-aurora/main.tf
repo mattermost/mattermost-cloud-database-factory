@@ -85,6 +85,7 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   db_cluster_parameter_group_name = "mattermost-provisioner-rds-cluster-pg"
   copy_tags_to_snapshot           = var.copy_tags_to_snapshot
   snapshot_identifier             = var.creation_snapshot_arn == "" ? null : var.creation_snapshot_arn
+  enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
 
   tags = merge(
     {

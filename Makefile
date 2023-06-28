@@ -12,7 +12,7 @@ TERRAFORM_VERSION=1.3.7
 ################################################################################
 
 GO ?= $(shell command -v go 2> /dev/null)
-MATTERMOST_CLOUD_DATABASE_FACTORY_IMAGE_REPO ?=mattermost/mattermost-cloud-database-factory
+MATTERMOST_CLOUD_DATABASE_FACTORY_IMAGE_REPO ?= mattermost/mattermost-cloud-database-factory
 MATTERMOST_CLOUD_DATABASE_FACTORY_IMAGE ?= mattermost/mattermost-cloud-database-factory:test
 MACHINE = $(shell uname -m)
 GOFLAGS ?= $(GOFLAGS:)

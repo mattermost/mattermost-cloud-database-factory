@@ -37,11 +37,13 @@ data "aws_iam_role" "enhanced_monitoring" {
 }
 
 resource "aws_kms_key" "aurora_storage_key" {
+  count                   = varm.kms_key_id == "" ? 1 : 0
   description             = format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)
   deletion_window_in_days = 7
 }
 
 resource "aws_kms_alias" "aurora_storage_alias" {
+  count         = varm.kms_key_id == "" ? 1 : 0
   name          = "alias/${format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
   target_key_id = aws_kms_key.aurora_storage_key.key_id
 }
@@ -58,7 +60,8 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   cluster_identifier               = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
   engine                           = var.engine
   engine_version                   = var.engine_version
-  kms_key_id                       = aws_kms_key.aurora_storage_key.arn
+  kms_key_id                       = var.kms_key_id == "" ? aws_kms_key.aurora_storage_key.arn : var.kms_key_id
+  performance_insights_kms_key_id  = var.kms_key_id == "" && local.performance_insights_enabled ? aws_kms_key.aurora_storage_key.arn : var.kms_key_id
   master_username                  = var.username
   master_password                  = local.master_password
   final_snapshot_identifier        = "${var.final_snapshot_identifier_prefix}-${format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
@@ -78,6 +81,7 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   snapshot_identifier              = var.creation_snapshot_arn == "" ? null : var.creation_snapshot_arn
   allow_major_version_upgrade      = var.allow_major_version_upgrade
   enabled_cloudwatch_logs_exports  = var.enabled_cloudwatch_logs_exports
+
 
   tags = merge(
     {

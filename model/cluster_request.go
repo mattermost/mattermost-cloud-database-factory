@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/pkg/errors"
 )
 
@@ -23,6 +24,7 @@ type ProvisionClusterRequest struct {
 	CreationSnapshotARN      string `json:"creationSnapshotARN,omitempty"`
 	EnableDevopsGuru         bool   `json:"enableDevopsGuru"`
 	AllowMajorVersionUpgrade bool   `json:"allowMajorVersionUpgrade,omitempty"`
+	KMSKeyID                 string `json:"kmsKeyID,omitempty"`
 }
 
 // NewProvisionClusterRequestFromReader decodes the request and returns after validation and setting the defaults.
@@ -54,6 +56,10 @@ func (request *ProvisionClusterRequest) Validate() error {
 
 	if request.StateStore == "" {
 		return errors.Errorf("state store cannot be empty")
+	}
+
+	if request.KMSKeyID != "" && !arn.IsARN(request.KMSKeyID) {
+		return errors.Errorf("KMS key ID not valid format")
 	}
 
 	return nil

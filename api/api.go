@@ -65,6 +65,7 @@ func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request
 		CreationSnapshotARN:      provisionClusterRequest.CreationSnapshotARN,
 		EnableDevopsGuru:         provisionClusterRequest.EnableDevopsGuru,
 		AllowMajorVersionUpgrade: provisionClusterRequest.AllowMajorVersionUpgrade,
+		KMSKeyID:                 provisionClusterRequest.KMSKeyID,
 	}
 
 	go dbfactory.InitProvisionCluster(&cluster)

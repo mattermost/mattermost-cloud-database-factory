@@ -17,7 +17,7 @@ terraform {
 
 locals {
   master_password         = var.password == "" ? random_password.master_password.result : var.password
-  cluster_kms_key_arn     = var.kms_key_id == "" ? aws_kms_key.aurora_storage_key[*].arn : var.kms_key_id
+  cluster_kms_key_arn     = var.kms_key_id == "" ? join("", aws_kms_key.aurora_storage_key[*].arn) : var.kms_key_id
   performance_kms_key_arn = var.kms_key_id == "" ? join("", aws_kms_key.aurora_performance_insights_key[*].arn) : var.kms_key_id
   database_id             = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
 }

@@ -17,8 +17,8 @@ terraform {
 
 locals {
   master_password         = var.password == "" ? random_password.master_password.result : var.password
-  cluster_kms_key_arn     = var.kms_key_id == "" ? aws_kms_key.aurora_storage_key.0.arn : var.kms_key_id
-  performance_kms_key_arn = var.kms_key_id == "" ? join("", aws_kms_key.aurora_performance_insights_key.0.arn) : var.kms_key_id
+  cluster_kms_key_arn     = var.kms_key_id == "" ? aws_kms_key.aurora_storage_key[*].arn : var.kms_key_id
+  performance_kms_key_arn = var.kms_key_id == "" ? join("", aws_kms_key.aurora_performance_insights_key[*].arn) : var.kms_key_id
   database_id             = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
 }
 
@@ -49,13 +49,13 @@ resource "aws_kms_key" "aurora_performance_insights_key" {
 resource "aws_kms_alias" "aurora_storage_alias" {
   count         = var.kms_key_id == "" ? 1 : 0
   name          = "alias/${format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
-  target_key_id = aws_kms_key.aurora_storage_key.*.id
+  target_key_id = aws_kms_key.aurora_storage_key[*].id
 }
 
 resource "aws_kms_alias" "aurora_performance_insights_alias" {
   count         = var.kms_key_id == "" && var.performance_insights_enabled ? 1 : 0
   name          = "alias/${format("rds-multitenant-performance-insights-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
-  target_key_id = aws_kms_key.aurora_performance_insights_key.*.id
+  target_key_id = aws_kms_key.aurora_performance_insights_key[*].id
 }
 
 data "aws_security_group" "db_sg" {

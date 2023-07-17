@@ -157,5 +157,5 @@ variable "enabled_cloudwatch_logs_exports" {
 variable "kms_key_id" {
   default     = ""
   type        = string
-  description = "RN for the KMS encryption key if one is set to the cluster"
+  description = "ARN for the KMS encryption key if one is set to the cluster"
 }

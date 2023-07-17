@@ -59,7 +59,6 @@ module "rds_setup" {
   allow_major_version_upgrade      = var.allow_major_version_upgrade
   enabled_cloudwatch_logs_exports  = var.enabled_cloudwatch_logs_exports
   kms_key_id                       = var.kms_key_id
-  performance_insights_kms_key_id  = var.kms_key_id
 
   tags = {
     Owner       = "cloud-team"

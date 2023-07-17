@@ -32,6 +32,7 @@ func init() {
 	clusterProvisionCmd.Flags().String("creation-snapshot-arn", "", "The ARN of the snapshot to use for the DB cluster (default \"\")")
 	clusterProvisionCmd.Flags().Bool("devops-guru", false, "Enable the AWS service Devops Guru to all database instances within a cluster.")
 	clusterProvisionCmd.Flags().Bool("allow-major-version-upgrade", false, "Enable to allow major engine version upgrades when changing engine versions.")
+	clusterProvisionCmd.Flags().String("kms-key-id", "", "The ARN key to encrypt the storage and performance insights")
 
 	clusterCmd.AddCommand(clusterProvisionCmd)
 
@@ -69,6 +70,7 @@ var clusterProvisionCmd = &cobra.Command{
 		creationSnapshotARN, _ := command.Flags().GetString("creation-snapshot-arn")
 		enableDevopsGuru, _ := command.Flags().GetBool("devops-guru")
 		allowMajorVersionUpgrade, _ := command.Flags().GetBool("allow-major-version-upgrade")
+		kmsKeyID, _ := command.Flags().GetString("kms-key-id")
 
 		cluster, err := client.ProvisionCluster(&model.ProvisionClusterRequest{
 			VPCID:                    vpcID,
@@ -84,6 +86,7 @@ var clusterProvisionCmd = &cobra.Command{
 			CreationSnapshotARN:      creationSnapshotARN,
 			EnableDevopsGuru:         enableDevopsGuru,
 			AllowMajorVersionUpgrade: allowMajorVersionUpgrade,
+			KMSKeyID:                 kmsKeyID,
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to provision RDS cluster")

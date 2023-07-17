@@ -24,6 +24,8 @@ locals {
   database_id                  = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
   max_connections              = var.ram_memory_bytes[var.instance_type] / 9531392
   performance_insights_enabled = var.environment == "prod" ? var.performance_insights_enabled : false
+  cluster_kms_key_arn          = var.kms_key_id == "" ? aws_kms_key.aurora_storage_key.0.arn : var.kms_key_id
+
 }
 
 # Random string to use as master password unless one is specified
@@ -37,15 +39,15 @@ data "aws_iam_role" "enhanced_monitoring" {
 }
 
 resource "aws_kms_key" "aurora_storage_key" {
-  count                   = varm.kms_key_id == "" ? 1 : 0
+  count                   = var.kms_key_id == "" ? 1 : 0
   description             = format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)
   deletion_window_in_days = 7
 }
 
 resource "aws_kms_alias" "aurora_storage_alias" {
-  count         = varm.kms_key_id == "" ? 1 : 0
+  count         = var.kms_key_id == "" ? 1 : 0
   name          = "alias/${format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
-  target_key_id = aws_kms_key.aurora_storage_key.key_id
+  target_key_id = var.kms_key_id != "" ? var.kms_key_id == "" : aws_kms_key.aurora_storage_key.*.key_id
 }
 
 data "aws_security_group" "db_sg" {
@@ -60,8 +62,7 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   cluster_identifier               = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
   engine                           = var.engine
   engine_version                   = var.engine_version
-  kms_key_id                       = var.kms_key_id == "" ? aws_kms_key.aurora_storage_key.arn : var.kms_key_id
-  performance_insights_kms_key_id  = var.kms_key_id == "" && local.performance_insights_enabled ? aws_kms_key.aurora_storage_key.arn : var.kms_key_id
+  kms_key_id                       = local.cluster_kms_key_arn
   master_username                  = var.username
   master_password                  = local.master_password
   final_snapshot_identifier        = "${var.final_snapshot_identifier_prefix}-${format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
@@ -101,20 +102,21 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
 }
 
 resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
-  count                        = var.replica_min
-  identifier                   = format("rds-db-instance-multitenant-%s-%s-%s", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
-  cluster_identifier           = aws_rds_cluster.provisioning_rds_cluster.id
-  engine                       = var.engine
-  engine_version               = var.engine_version
-  instance_class               = var.instance_type
-  db_subnet_group_name         = "mattermost-provisioner-db-${var.vpc_id}-postgresql"
-  db_parameter_group_name      = aws_db_parameter_group.db_parameter_group_postgresql.id
-  preferred_maintenance_window = var.preferred_maintenance_window
-  apply_immediately            = var.apply_immediately
-  monitoring_role_arn          = data.aws_iam_role.enhanced_monitoring.arn
-  monitoring_interval          = var.monitoring_interval
-  promotion_tier               = count.index + 1
-  performance_insights_enabled = local.performance_insights_enabled
+  count                           = var.replica_min
+  identifier                      = format("rds-db-instance-multitenant-%s-%s-%s", split("-", var.vpc_id)[1], local.database_id, (count.index + 1))
+  cluster_identifier              = aws_rds_cluster.provisioning_rds_cluster.id
+  engine                          = var.engine
+  engine_version                  = var.engine_version
+  instance_class                  = var.instance_type
+  db_subnet_group_name            = "mattermost-provisioner-db-${var.vpc_id}-postgresql"
+  db_parameter_group_name         = aws_db_parameter_group.db_parameter_group_postgresql.id
+  preferred_maintenance_window    = var.preferred_maintenance_window
+  apply_immediately               = var.apply_immediately
+  monitoring_role_arn             = data.aws_iam_role.enhanced_monitoring.arn
+  monitoring_interval             = var.monitoring_interval
+  promotion_tier                  = count.index + 1
+  performance_insights_enabled    = local.performance_insights_enabled
+  performance_insights_kms_key_id = local.performance_insights_enabled ? var.kms_key_id : ""
 
   tags = merge(
     {

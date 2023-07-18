@@ -51,6 +51,8 @@ module "rds_setup" {
   creation_snapshot_arn            = var.creation_snapshot_arn
   multitenant_tag                  = var.multitenant_tag
   enabled_cloudwatch_logs_exports  = var.enabled_cloudwatch_logs_exports
+  kms_key_id                       = var.kms_key_id
+
 
   # Added for compatibility
 

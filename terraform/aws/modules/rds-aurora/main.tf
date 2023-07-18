@@ -17,8 +17,8 @@ terraform {
 
 locals {
   master_password         = var.password == "" ? random_password.master_password.result : var.password
-  performance_kms_key     = join("", aws_kms_key.aurora_performance_insights_key[*].keys_id)
-  performance_kms_key_arn = join("", aws_kms_key.aurora_performance_insights_key[*].arn)
+  cluster_kms_key_arn     = var.kms_key_id == "" ? join("", aws_kms_key.aurora_storage_key[*].arn) : var.kms_key_id
+  performance_kms_key_arn = var.kms_key_id == "" ? join("", aws_kms_key.aurora_performance_insights_key[*].arn) : var.kms_key_id
   database_id             = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
 }
 
@@ -33,27 +33,29 @@ data "aws_iam_role" "enhanced_monitoring" {
 }
 
 resource "aws_kms_key" "aurora_storage_key" {
+  count = var.kms_key_id == "" ? 1 : 0
+
   description             = format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)
   deletion_window_in_days = 7
 }
 
 resource "aws_kms_key" "aurora_performance_insights_key" {
-  count = var.performance_insights_enabled == true ? 1 : 0
+  count = var.performance_insights_enabled == true && var.kms_key_id == "" ? 1 : 0
 
   description             = format("rds-multitenant-performance-insights-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)
   deletion_window_in_days = 7
 }
 
 resource "aws_kms_alias" "aurora_storage_alias" {
+  count         = var.kms_key_id == "" ? 1 : 0
   name          = "alias/${format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
-  target_key_id = aws_kms_key.aurora_storage_key.key_id
+  target_key_id = aws_kms_key.aurora_storage_key[*].id
 }
 
 resource "aws_kms_alias" "aurora_performance_insights_alias" {
-  count = var.performance_insights_enabled == true ? 1 : 0
-
+  count         = var.kms_key_id == "" && var.performance_insights_enabled ? 1 : 0
   name          = "alias/${format("rds-multitenant-performance-insights-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
-  target_key_id = local.performance_kms_key
+  target_key_id = aws_kms_key.aurora_performance_insights_key[*].id
 }
 
 data "aws_security_group" "db_sg" {
@@ -68,7 +70,7 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   cluster_identifier              = format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)
   engine                          = var.engine
   engine_version                  = var.engine_version
-  kms_key_id                      = aws_kms_key.aurora_storage_key.arn
+  kms_key_id                      = local.cluster_kms_key_arn
   master_username                 = var.username
   master_password                 = local.master_password
   final_snapshot_identifier       = "${var.final_snapshot_identifier_prefix}-${format("rds-cluster-multitenant-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
@@ -86,6 +88,7 @@ resource "aws_rds_cluster" "provisioning_rds_cluster" {
   copy_tags_to_snapshot           = var.copy_tags_to_snapshot
   snapshot_identifier             = var.creation_snapshot_arn == "" ? null : var.creation_snapshot_arn
   enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
+  kms                             = var.creation_snapshot_arn == "" ? null : var.creation_snapshot_arn
 
   tags = merge(
     {

@@ -55,7 +55,7 @@ check-style: govet lint tflint goformat
 .PHONY: lint
 lint: $(GOLANGCILINT)
 	@echo Running golangci-lint
-	$(GOLANGCILINT) run
+	$(GOLANGCILINT) run --timeout=10m
 
 ## Runs lint against all packages for changes only
 .PHONY: lint-changes

@@ -41,9 +41,9 @@ resource "aws_kms_key" "aurora_storage_key" {
 }
 
 resource "aws_kms_alias" "aurora_storage_alias" {
-count         = var.kms_key_id == "" ? 1 : 0
-name          = "alias/${format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
-target_key_id = var.kms_key_id != "" ? var.kms_key_id : aws_kms_key.aurora_storage_key[0].key_id
+  count         = var.kms_key_id == "" ? 1 : 0
+  name          = "alias/${format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
+  target_key_id = var.kms_key_id != "" ? var.kms_key_id : aws_kms_key.aurora_storage_key[0].key_id
 }
 
 data "aws_security_group" "db_sg" {

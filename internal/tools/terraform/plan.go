@@ -24,6 +24,7 @@ type terraformOutput struct {
 func (c *Cmd) Init(remoteKey string) error {
 	_, _, err := c.run(
 		"init",
+		//arg("upgrade"),
 		arg("backend-config", fmt.Sprintf("bucket=%s", c.remoteStateBucket)),
 		arg("backend-config", fmt.Sprintf("key=%s", remoteKey)),
 		arg("backend-config", "region=us-east-1"),
@@ -65,6 +66,7 @@ func (c *Cmd) Plan(cluster *model.Cluster) error {
 		arg("var", fmt.Sprintf("enable_devops_guru=%t", cluster.EnableDevopsGuru)),
 		arg("var", fmt.Sprintf("allow_major_version_upgrade=%t", cluster.AllowMajorVersionUpgrade)),
 		arg("var", fmt.Sprintf("kms_key_id=%s", cluster.KMSKeyID)),
+		arg("var", fmt.Sprintf("deletion_protection=%t", cluster.DeletionProtection)),
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to invoke terraform plan")
@@ -79,7 +81,7 @@ func (c *Cmd) Apply(cluster *model.Cluster) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to transform replicas string to integer")
 	}
-
+	//os.Setenv("TF_LOG", "TRACE")
 	var multitenantTag string
 	if cluster.DBProxy {
 		multitenantTag = "multitenant-rds-dbproxy"
@@ -100,9 +102,11 @@ func (c *Cmd) Apply(cluster *model.Cluster) error {
 		arg("var", fmt.Sprintf("enable_devops_guru=%t", cluster.EnableDevopsGuru)),
 		arg("var", fmt.Sprintf("allow_major_version_upgrade=%t", cluster.AllowMajorVersionUpgrade)),
 		arg("var", fmt.Sprintf("kms_key_id=%s", cluster.KMSKeyID)),
+		arg("var", fmt.Sprintf("deletion_protection=%t", cluster.DeletionProtection)),
 		arg("auto-approve"),
 	)
 	if err != nil {
+		c.logger.Debug(err)
 		return errors.Wrap(err, "failed to invoke terraform apply")
 	}
 
@@ -119,6 +123,79 @@ func (c *Cmd) ApplyTarget(target string) error {
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to invoke terraform apply")
+	}
+
+	return nil
+}
+
+// PlanDeletion invokes terraform plan for deletion.
+func (c *Cmd) PlanDeletion(cluster *model.Cluster) error {
+	replicas, err := strconv.Atoi(cluster.Replicas)
+	if err != nil {
+		return errors.Wrap(err, "failed to transform replicas string to integer")
+	}
+
+	var multitenantTag string
+	if cluster.DBProxy {
+		multitenantTag = "multitenant-rds-dbproxy"
+	} else {
+		multitenantTag = "multitenant-rds"
+	}
+	_, _, err = c.run(
+		"plan",
+		arg("destroy"), // Specify destroy operation
+		arg("input", "false"),
+		arg("var", fmt.Sprintf("vpc_id=%s", cluster.VPCID)),
+		arg("var", fmt.Sprintf("db_id=%s", cluster.ClusterID)),
+		arg("var", fmt.Sprintf("environment=%s", cluster.Environment)),
+		arg("var", fmt.Sprintf("instance_type=%s", cluster.InstanceType)),
+		arg("var", fmt.Sprintf("backup_retention_period=%s", cluster.BackupRetentionPeriod)),
+		arg("var", fmt.Sprintf("replica_min=%d", replicas)),
+		arg("var", fmt.Sprintf("multitenant_tag=%s", multitenantTag)),
+		arg("var", fmt.Sprintf("creation_snapshot_arn=%s", cluster.CreationSnapshotARN)),
+		arg("var", fmt.Sprintf("enable_devops_guru=%t", cluster.EnableDevopsGuru)),
+		arg("var", fmt.Sprintf("allow_major_version_upgrade=%t", cluster.AllowMajorVersionUpgrade)),
+		arg("var", fmt.Sprintf("kms_key_id=%s", cluster.KMSKeyID)),
+		arg("var", fmt.Sprintf("deletion_protection=%t", cluster.DeletionProtection)))
+	if err != nil {
+		return errors.Wrap(err, "failed to invoke terraform plan for deletion")
+	}
+
+	return nil
+}
+
+// ApplyDeletion invokes terraform apply for deletion.
+func (c *Cmd) ApplyDeletion(cluster *model.Cluster) error {
+	replicas, err := strconv.Atoi(cluster.Replicas)
+	if err != nil {
+		return errors.Wrap(err, "failed to transform replicas string to integer")
+	}
+
+	var multitenantTag string
+	if cluster.DBProxy {
+		multitenantTag = "multitenant-rds-dbproxy"
+	} else {
+		multitenantTag = "multitenant-rds"
+	}
+	_, _, err = c.run(
+		"apply",
+		arg("destroy"), // Specify destroy operation
+		arg("input", "false"),
+		arg("var", fmt.Sprintf("vpc_id=%s", cluster.VPCID)),
+		arg("var", fmt.Sprintf("db_id=%s", cluster.ClusterID)),
+		arg("var", fmt.Sprintf("environment=%s", cluster.Environment)),
+		arg("var", fmt.Sprintf("instance_type=%s", cluster.InstanceType)),
+		arg("var", fmt.Sprintf("backup_retention_period=%s", cluster.BackupRetentionPeriod)),
+		arg("var", fmt.Sprintf("replica_min=%d", replicas)),
+		arg("var", fmt.Sprintf("multitenant_tag=%s", multitenantTag)),
+		arg("var", fmt.Sprintf("creation_snapshot_arn=%s", cluster.CreationSnapshotARN)),
+		arg("var", fmt.Sprintf("enable_devops_guru=%t", cluster.EnableDevopsGuru)),
+		arg("var", fmt.Sprintf("allow_major_version_upgrade=%t", cluster.AllowMajorVersionUpgrade)),
+		arg("var", fmt.Sprintf("kms_key_id=%s", cluster.KMSKeyID)),
+		arg("auto-approve"),
+	)
+	if err != nil {
+		return errors.Wrap(err, "failed to invoke terraform apply for deletion")
 	}
 
 	return nil

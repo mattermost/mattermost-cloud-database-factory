@@ -21,6 +21,7 @@ type Cluster struct {
 	EnableDevopsGuru         bool
 	AllowMajorVersionUpgrade bool
 	KMSKeyID                 string
+	DeletionProtection       bool
 }
 
 // ClusterFromReader decodes a json-encoded cluster from the given io.Reader.

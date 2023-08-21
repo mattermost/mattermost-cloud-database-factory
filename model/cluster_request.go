@@ -87,5 +87,4 @@ func (request *ProvisionClusterRequest) SetDefaults() {
 	if request.Replicas == "" {
 		request.Replicas = "3"
 	}
-
 }

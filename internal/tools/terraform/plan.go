@@ -24,10 +24,10 @@ type terraformOutput struct {
 func (c *Cmd) Init(remoteKey string) error {
 	_, _, err := c.run(
 		"init",
-		//arg("upgrade"),
 		arg("backend-config", fmt.Sprintf("bucket=%s", c.remoteStateBucket)),
 		arg("backend-config", fmt.Sprintf("key=%s", remoteKey)),
 		arg("backend-config", "region=us-east-1"),
+		//arg("upgrade"),
 		//arg("migrate-state"),
 		//arg("force-copy"),
 		arg("reconfigure"),
@@ -81,7 +81,6 @@ func (c *Cmd) Apply(cluster *model.Cluster) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to transform replicas string to integer")
 	}
-	//os.Setenv("TF_LOG", "TRACE")
 	var multitenantTag string
 	if cluster.DBProxy {
 		multitenantTag = "multitenant-rds-dbproxy"
@@ -106,7 +105,6 @@ func (c *Cmd) Apply(cluster *model.Cluster) error {
 		arg("auto-approve"),
 	)
 	if err != nil {
-		c.logger.Debug(err)
 		return errors.Wrap(err, "failed to invoke terraform apply")
 	}
 

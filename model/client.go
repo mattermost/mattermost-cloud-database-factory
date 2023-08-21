@@ -72,3 +72,20 @@ func (c *Client) ProvisionCluster(request *ProvisionClusterRequest) (*Cluster, e
 		return nil, errors.Errorf("failed with status code %d", resp.StatusCode)
 	}
 }
+
+// DeleteCluster requests the deletion of a RDS cluster from the configured provisioning server.
+func (c *Client) DeleteCluster(request *ProvisionClusterRequest) (*Cluster, error) {
+	resp, err := c.doPost(c.buildURL("/api/delete"), request)
+	if err != nil {
+		return nil, err
+	}
+	defer closeBody(resp)
+
+	switch resp.StatusCode {
+	case http.StatusAccepted:
+		return ClusterFromReader(resp.Body)
+
+	default:
+		return nil, errors.Errorf("failed with status code %d", resp.StatusCode)
+	}
+}

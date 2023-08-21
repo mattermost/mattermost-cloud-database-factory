@@ -71,7 +71,9 @@ or via a API call:
     "replicas": "1",
     "dbProxy": true,
     "EnableDevopsGuru": false,
-    "AllowMajorVersionUpgrade": true
+    "AllowMajorVersionUpgrade": true,
+    "KMSKeyID": "", 
+    "DeletionProtection": false
 }
 ```
 

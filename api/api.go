@@ -21,8 +21,9 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 		return newContextHandler(context, handler)
 	}
 
-	clustersRouter := apiRouter.PathPrefix("/provision").Subrouter()
-	clustersRouter.Handle("", addContext(handleProvisionDBCluster)).Methods("POST")
+	clustersRouter := apiRouter.PathPrefix("").Subrouter()
+	clustersRouter.Handle("/provision", addContext(handleProvisionDBCluster)).Methods("POST")
+	clustersRouter.Handle("/delete", addContext(handleDeleteDBCluster)).Methods("POST")
 }
 
 // handleProvisionDBCluster responds to POST /api/provision, beginning the process of creating a new RDS Aurora cluster.
@@ -42,6 +43,8 @@ func initCluster(apiRouter *mux.Router, context *Context) {
 //		  "creationSnapshotARN": "",
 //		  "enableDevopsGuru": false,
 //		  "allowMajorVersionUpgrade": false,
+//		  "KMSKeyID": "",
+//		  "deletionProtection": true
 //	}
 func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
 	provisionClusterRequest, err := model.NewProvisionClusterRequestFromReader(r.Body)
@@ -66,9 +69,43 @@ func handleProvisionDBCluster(c *Context, w http.ResponseWriter, r *http.Request
 		EnableDevopsGuru:         provisionClusterRequest.EnableDevopsGuru,
 		AllowMajorVersionUpgrade: provisionClusterRequest.AllowMajorVersionUpgrade,
 		KMSKeyID:                 provisionClusterRequest.KMSKeyID,
+		DeletionProtection:       provisionClusterRequest.DeletionProtection,
 	}
 
 	go dbfactory.InitProvisionCluster(&cluster)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	outputJSON(c, w, cluster)
+}
+
+// handleDeleteDBCluster responds to POST /api/delete, beginning the process of deleting an existing RDS Aurora cluster.
+func handleDeleteDBCluster(c *Context, w http.ResponseWriter, r *http.Request) {
+	provisionClusterRequest, err := model.NewProvisionClusterRequestFromReader(r.Body)
+	if err != nil {
+		c.Logger.WithError(err).Error("failed to decode request")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	cluster := model.Cluster{
+		VPCID:                    provisionClusterRequest.VPCID,
+		ClusterID:                provisionClusterRequest.ClusterID,
+		Environment:              provisionClusterRequest.Environment,
+		StateStore:               provisionClusterRequest.StateStore,
+		Apply:                    provisionClusterRequest.Apply,
+		InstanceType:             provisionClusterRequest.InstanceType,
+		BackupRetentionPeriod:    provisionClusterRequest.BackupRetentionPeriod,
+		DBEngine:                 provisionClusterRequest.DBEngine,
+		Replicas:                 provisionClusterRequest.Replicas,
+		DBProxy:                  provisionClusterRequest.DBProxy,
+		CreationSnapshotARN:      provisionClusterRequest.CreationSnapshotARN,
+		EnableDevopsGuru:         provisionClusterRequest.EnableDevopsGuru,
+		AllowMajorVersionUpgrade: provisionClusterRequest.AllowMajorVersionUpgrade,
+		KMSKeyID:                 provisionClusterRequest.KMSKeyID,
+	}
+
+	go dbfactory.InitDeleteCluster(&cluster)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)

@@ -25,6 +25,7 @@ type ProvisionClusterRequest struct {
 	EnableDevopsGuru         bool   `json:"enableDevopsGuru"`
 	AllowMajorVersionUpgrade bool   `json:"allowMajorVersionUpgrade,omitempty"`
 	KMSKeyID                 string `json:"kmsKeyID,omitempty"`
+	DeletionProtection       bool   `json:"deletionProtection,omitempty"`
 }
 
 // NewProvisionClusterRequestFromReader decodes the request and returns after validation and setting the defaults.

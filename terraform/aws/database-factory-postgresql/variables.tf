@@ -256,3 +256,8 @@ variable "kms_key_id" {
   type        = string
   description = "ARN for the KMS encryption key if one is set to the cluster"
 }
+
+variable "region" {
+  default = "us-east-1"
+  type    = string
+}

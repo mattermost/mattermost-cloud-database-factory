@@ -1,8 +1,5 @@
 terraform {
   required_version = ">= 0.14.5"
-  backend "s3" {
-    region = "us-east-1"
-  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -24,8 +21,7 @@ locals {
   database_id                  = var.db_id == "" ? random_string.db_cluster_identifier.result : var.db_id
   max_connections              = var.ram_memory_bytes[var.instance_type] / 9531392
   performance_insights_enabled = var.environment == "prod" ? var.performance_insights_enabled : false
-  cluster_kms_key_arn          = var.kms_key_id == "" ? join("", aws_kms_key.aurora_storage_key[*].arn) : var.kms_key_id
-
+  cluster_kms_key_arn          = var.kms_key_id == "" ? aws_kms_key.aurora_storage_key[0].arn : var.kms_key_id
 }
 
 # Random string to use as master password unless one is specified
@@ -47,7 +43,7 @@ resource "aws_kms_key" "aurora_storage_key" {
 resource "aws_kms_alias" "aurora_storage_alias" {
   count         = var.kms_key_id == "" ? 1 : 0
   name          = "alias/${format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)}"
-  target_key_id = var.kms_key_id != "" ? var.kms_key_id == "" : aws_kms_key.aurora_storage_key[*].key_id
+  target_key_id = var.kms_key_id != "" ? var.kms_key_id : aws_kms_key.aurora_storage_key[0].key_id
 }
 
 data "aws_security_group" "db_sg" {

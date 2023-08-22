@@ -143,6 +143,9 @@ resource "aws_appautoscaling_target" "read_replica_count" {
   resource_id        = "cluster:${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}"
   scalable_dimension = "rds:cluster:ReadReplicaCount"
   service_namespace  = "rds"
+  depends_on = [
+    aws_rds_cluster_instance.provisioning_rds_db_instance
+  ]
 }
 
 resource "aws_appautoscaling_policy" "autoscaling_read_replica_count" {

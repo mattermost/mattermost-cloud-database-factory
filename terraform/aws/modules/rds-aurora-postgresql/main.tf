@@ -38,6 +38,7 @@ resource "aws_kms_key" "aurora_storage_key" {
   count                   = var.kms_key_id == "" ? 1 : 0
   description             = format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)
   deletion_window_in_days = 7
+  enable_key_rotation     = var.enable_key_rotation
 }
 
 resource "aws_kms_alias" "aurora_storage_alias" {
@@ -120,7 +121,7 @@ resource "aws_rds_cluster_instance" "provisioning_rds_db_instance" {
       "MattermostCloudInstallationDatabase" = "PostgreSQL/Aurora"
     },
     var.tags,
-  [var.enable_devops_guru ? { "devops-guru-default" = replace("${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}", "/rds-cluster/", "rds-db-instance") } : null]...)
+  [var.enable_devops_guru ? { devops-guru-default = replace("${aws_rds_cluster.provisioning_rds_cluster.cluster_identifier}-${count.index + 1}", "/rds-cluster/", "rds-db-instance") } : null]...)
   lifecycle {
     ignore_changes = [
       instance_class,

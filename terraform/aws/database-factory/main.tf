@@ -52,6 +52,7 @@ module "rds_setup" {
   multitenant_tag                  = var.multitenant_tag
   enabled_cloudwatch_logs_exports  = var.enabled_cloudwatch_logs_exports
   kms_key_id                       = var.kms_key_id
+  enable_key_rotation              = var.enable_key_rotation
 
 
   # Added for compatibility

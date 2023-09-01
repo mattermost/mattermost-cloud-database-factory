@@ -37,6 +37,7 @@ resource "aws_kms_key" "aurora_storage_key" {
 
   description             = format("rds-multitenant-storage-key-%s-%s", split("-", var.vpc_id)[1], local.database_id)
   deletion_window_in_days = 7
+  enable_key_rotation     = var.enable_key_rotation
 }
 
 resource "aws_kms_key" "aurora_performance_insights_key" {

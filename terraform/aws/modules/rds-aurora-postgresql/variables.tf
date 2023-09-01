@@ -199,3 +199,9 @@ variable "kms_key_id" {
   type        = string
   description = "ARN for the KMS encryption key if one is set to the cluster"
 }
+
+variable "enable_key_rotation" {
+  default     = true
+  description = "Specifies whether KMS key rotation is enabled"
+  type        = bool
+}

@@ -261,3 +261,9 @@ variable "region" {
   default = "us-east-1"
   type    = string
 }
+
+variable "enable_key_rotation" {
+  default     = true
+  description = "Specifies whether KMS key rotation is enabled"
+  type        = bool
+}

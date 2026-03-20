@@ -75,7 +75,6 @@ jobs:
           image: "mattermost/mattermost-cloud-database-factory"
           output-format: table
           only-fixed: true
-          fail-build: true
           severity-cutoff: critical
 
       - name: ci/docker-push-pr

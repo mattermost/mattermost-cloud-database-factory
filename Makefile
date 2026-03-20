@@ -60,7 +60,8 @@ lint-changes: $(GOLANGCILINT)
 	$(GOLANGCILINT) run -n
 
 .PHONY: tflint
-tflint: setup-tflint plugin-tflint terraform-lint
+tflint: setup-tflint plugin-tflint
+# todo: terraform-lint is currently disabled because it's not working on the CI runner.
 
 ## setup: install tflint
 .PHONY: setup-tflint

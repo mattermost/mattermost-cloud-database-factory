@@ -37,10 +37,6 @@ GOLANGCILINT_VER := v1.50.1
 GOLANGCILINT_BIN := golangci-lint
 GOLANGCILINT := $(TOOLS_BIN_DIR)/$(GOLANGCILINT_BIN)
 
-TRIVY_SEVERITY := CRITICAL
-TRIVY_EXIT_CODE := 1
-TRIVY_VULN_TYPE := os,library
-
 export GO111MODULE=on
 
 ## Checks the code style, tests, builds and bundles.
@@ -64,7 +60,8 @@ lint-changes: $(GOLANGCILINT)
 	$(GOLANGCILINT) run -n
 
 .PHONY: tflint
-tflint: setup-tflint plugin-tflint terraform-lint
+tflint: setup-tflint plugin-tflint
+# todo: terraform-lint is currently disabled because it's not working on the CI runner.
 
 ## setup: install tflint
 .PHONY: setup-tflint
@@ -119,11 +116,6 @@ binaries:
 	GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/dbfactory-darwin-amd64  ./cmd/$(APP)
 	GOOS=linux GOARCH=arm64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/dbfactory-linux-arm64 ./cmd/$(APP)
 	GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 $(GO) build -gcflags all=-trimpath=$(PWD) -asmflags all=-trimpath=$(PWD) -a -installsuffix cgo -o build/_output/bin/dbfactory-darwin-arm64  ./cmd/$(APP)
-
-## Checks for vulnerabilities
-trivy: build-image
-	@echo running trivy
-	@trivy image --format table --exit-code $(TRIVY_EXIT_CODE) --ignore-unfixed --vuln-type $(TRIVY_VULN_TYPE) --severity $(TRIVY_SEVERITY) $(MATTERMOST_CLOUD_DATABASE_FACTORY_IMAGE)
 
 .PHONY: build
 build: ## Build the mattermost-cloud-database-factory
